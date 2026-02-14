@@ -4,11 +4,11 @@ const steps = [
   { 
     title: "AI Vision Observes", 
     desc: "Ambient cameras detect you washing dishes without soap, or cooking without oil—identifying usage patterns non-intrusively.",
-    example: "Dish soap: 85% empty",
+    example: "Dish soap: 15% empty",
     visual: (
-      <div className="relative w-full h-48 bg-gradient-to-br from-accent/10 to-muted/5 rounded-lg overflow-hidden border border-accent/20">
+      <div className="relative max-w-md mx-auto h-72 bg-gradient-to-br from-accent/10 to-muted/5 rounded-lg overflow-hidden border border-accent/20 flex items-center justify-center">
         <img 
-          src="https://i.ibb.co/9qXHYQv/dawn-dish-soap.jpg" 
+          src="https://i.ibb.co/Kj7YRVr7/homemade-hand-sanitizer-made-lime-dish-soap-homemade-hand-sanitizer-made-lime-dish-soap-201392642.webp" 
           alt="Dawn Dish Soap Detection" 
           className="w-full h-full object-cover opacity-90"
         />
@@ -22,9 +22,9 @@ const steps = [
           <div className="flex items-center gap-3 bg-card/95 backdrop-blur-sm rounded-lg p-3 border border-accent/30">
             <div className="text-left flex-1">
               <div className="text-xs font-semibold text-foreground">Dish Soap</div>
-              <div className="text-xs text-muted-foreground">Dawn Powerwash</div>
+              <div className="text-xs text-muted-foreground">Green Soap</div>
             </div>
-            <div className="text-sm font-bold text-accent">Low Stock</div>
+            <div className="text-sm font-bold text-accent">Not Low</div>
           </div>
         </div>
       </div>
@@ -35,7 +35,7 @@ const steps = [
     desc: "Machine learning models calculate when you'll run out based on historical usage, predicting 3-5 days before depletion.",
     example: "Reorder in 3 days",
     visual: (
-      <div className="relative w-full h-48 bg-gradient-to-br from-accent/10 to-accent/5 rounded-lg p-4 border border-accent/20">
+      <div className="relative w-full h-64 bg-gradient-to-br from-accent/10 to-accent/5 rounded-lg p-4 border border-accent/20">
         <div className="w-full h-full flex flex-col">
           <div className="text-center mb-2">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent/20 border border-accent/30">
@@ -65,21 +65,24 @@ const steps = [
               
               {/* Line chart */}
               <svg className="absolute inset-0 w-full h-full pb-6" viewBox="0 0 100 100" preserveAspectRatio="none">
-                <motion.polyline
-                  points="0,10 20,25 40,45 60,68 80,85 100,95"
+                <motion.path
+                  d="M 0 0 L 10 8 L 20 18 L 30 25 L 40 38 L 50 48 L 60 58 L 70 68 L 80 80 L 90 88 L 100 100"
                   fill="none"
                   stroke="hsl(var(--accent))"
-                  strokeWidth="2"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  opacity="0.7"
                   initial={{ pathLength: 0 }}
                   whileInView={{ pathLength: 1 }}
                   transition={{ duration: 1.5, ease: "easeInOut" }}
-                  vectorEffect="non-scaling-stroke"
                 />
                 <motion.circle
                   cx="100"
-                  cy="95"
+                  cy="100"
                   r="2"
                   fill="hsl(var(--accent))"
+                  opacity="0.8"
                   initial={{ scale: 0 }}
                   whileInView={{ scale: 1 }}
                   transition={{ delay: 1.5, duration: 0.3 }}
@@ -89,9 +92,15 @@ const steps = [
               {/* X-axis labels */}
               <div className="absolute bottom-0 left-0 right-0 flex justify-between text-xs text-muted-foreground">
                 <span>Day 1</span>
+                <span>Day 2</span>
+                <span>Day 3</span>
+                <span>Day 4</span>
                 <span>Day 5</span>
+                <span>Day 6</span>
+                <span>Day 7</span>
+                <span>Day 8</span>
+                <span>Day 9</span>
                 <span>Day 10</span>
-                <span>Day 15</span>
               </div>
             </div>
           </div>
@@ -113,9 +122,8 @@ const steps = [
       <div className="relative w-full h-48 bg-gradient-to-br from-accent/10 to-muted/5 rounded-lg p-4 flex items-center justify-center border border-accent/20">
         <div className="w-full max-w-[200px] bg-card rounded-xl shadow-xl border border-border p-3">
           <div className="flex items-start gap-2 mb-3">
-            <div className="w-10 h-10 rounded-lg bg-accent/20 border border-accent/30"></div>
             <div className="flex-1">
-              <div className="text-xs font-bold text-foreground">Dawn Dish Soap</div>
+              <div className="text-xs font-bold text-foreground">Green Soap</div>
               <div className="text-xs text-muted-foreground">Ultra Concentrate</div>
             </div>
           </div>
@@ -246,9 +254,6 @@ const HowItWorks = () => (
             {/* Content */}
             <div className="flex-1 w-full">
               <div className="inline-flex items-center gap-3 mb-4">
-                <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br from-accent/20 to-muted/20 border border-accent/30">
-                  <div className="w-6 h-6 rounded bg-accent/30"></div>
-                </div>
                 <div className="inline-block px-3 py-1.5 rounded-full bg-accent/10 font-display text-xs font-bold uppercase tracking-widest text-accent border border-accent/20">
                   Step {i + 1}
                 </div>

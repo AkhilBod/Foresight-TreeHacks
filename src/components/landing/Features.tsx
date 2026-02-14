@@ -8,7 +8,7 @@ const features = [
     visual: (
       <div className="relative w-full h-full min-h-[180px] bg-gradient-to-br from-accent/10 to-muted/5 rounded-lg overflow-hidden">
         <img 
-          src="https://ibb.co/LDLmJdZh" 
+          src="https://i.ibb.co/8nWqdg7/image.png" 
           alt="AI Vision Detection" 
           className="w-full h-full object-cover opacity-90"
         />

@@ -248,9 +248,6 @@ const Dashboard = () => {
                     className="flex items-center justify-between rounded-lg border border-border bg-surface p-4"
                   >
                     <div className="flex items-center gap-4">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-surface-elevated">
-                        <div className="h-5 w-5 rounded bg-primary/20" />
-                      </div>
                       <div>
                         <p className="text-sm font-medium text-foreground">{item.name}</p>
                         <p className="text-xs text-muted-foreground">{item.brand}</p>

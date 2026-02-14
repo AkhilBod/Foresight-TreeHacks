@@ -6,7 +6,7 @@ const items = [
 
 const HeroDashboardMockup = () => (
   <div className="relative mx-auto w-full max-w-3xl">
-    <div className="rounded-xl border border-border bg-card p-1 shadow-2xl">
+    <div className="rounded-xl border border-border bg-card p-1 shadow-2xl overflow-hidden">
       {/* Title bar */}
       <div className="flex items-center gap-2 rounded-t-lg bg-surface-elevated px-4 py-2.5">
         <div className="flex gap-1.5">
@@ -17,50 +17,13 @@ const HeroDashboardMockup = () => (
         <span className="ml-3 text-xs text-muted-foreground">Foresight Dashboard</span>
       </div>
 
-      {/* Content */}
-      <div className="space-y-3 p-5">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-xs text-muted-foreground">Pending Approval</p>
-            <p className="font-display text-lg font-semibold text-foreground">3 Items Detected</p>
-          </div>
-          <div className="rounded-md bg-primary/10 px-3 py-1.5">
-            <span className="text-xs font-medium text-primary">Monthly: $142 / $200</span>
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          {items.map((item) => (
-            <div
-              key={item.name}
-              className="flex items-center justify-between rounded-lg border border-border bg-surface p-3"
-            >
-              <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-md bg-surface-elevated">
-                  <div className="h-5 w-5 rounded bg-primary/20" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-foreground">{item.name}</p>
-                  <p className="text-xs text-muted-foreground">{item.brand}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="text-right">
-                  <p className="text-sm font-medium text-foreground">{item.price}</p>
-                  <p className="text-xs text-primary">{item.confidence}% match</p>
-                </div>
-                <div className="flex gap-1.5">
-                  <button className="flex h-7 w-7 items-center justify-center rounded-md bg-primary/15 text-primary transition-colors hover:bg-primary/25">
-                    ✓
-                  </button>
-                  <button className="flex h-7 w-7 items-center justify-center rounded-md bg-destructive/15 text-destructive transition-colors hover:bg-destructive/25">
-                    ✕
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+      {/* Dashboard Image */}
+      <div className="w-full">
+        <img 
+          src="https://i.ibb.co/b5mxHc19/image.png" 
+          alt="Foresight Dashboard" 
+          className="w-full h-auto"
+        />
       </div>
     </div>
     {/* Glow effect */}
