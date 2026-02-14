@@ -15,26 +15,7 @@ interface Activity {
 }
 
 // Expected items by household area
-const HOUSEHOLD_CONTEXTS = {
-  kitchen: [
-    "Dish Soap", "Hand Soap", "Paper Towels", "Sponges", "Dish Detergent",
-    "Cooking Oil", "Olive Oil", "Salt", "Pepper", "All-Purpose Cleaner",
-    "Trash Bags", "Aluminum Foil", "Plastic Wrap", "Coffee", "Coffee Filters"
-  ],
-  bathroom: [
-    "Hand Soap", "Toilet Paper", "Paper Towels", "Shampoo", "Conditioner",
-    "Body Wash", "Toothpaste", "Facial Tissues", "Bathroom Cleaner",
-    "Hand Sanitizer", "Cotton Swabs", "Cotton Balls"
-  ],
-  laundry: [
-    "Laundry Detergent", "Fabric Softener", "Dryer Sheets", "Stain Remover",
-    "Bleach", "Laundry Pods"
-  ],
-  general: [
-    "Hand Sanitizer", "Disinfecting Wipes", "Glass Cleaner", "Multi-Surface Cleaner",
-    "Air Freshener", "Light Bulbs", "Batteries"
-  ]
-};
+
 
 const Camera = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
