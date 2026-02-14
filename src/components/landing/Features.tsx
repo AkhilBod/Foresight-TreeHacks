@@ -3,12 +3,12 @@ import { motion } from "framer-motion";
 const features = [
   { 
     title: "Ambient AI Vision", 
-    desc: "Computer vision cameras observe your daily routines—like washing dishes without soap—and identify when essentials are running low without being intrusive.",
+    desc: "Observe  routines like washing dishes without soap rand identify when essentials are running low without being intrusive.",
     color: "accent",
     visual: (
       <div className="relative w-full h-full min-h-[180px] bg-gradient-to-br from-accent/10 to-muted/5 rounded-lg overflow-hidden">
         <img 
-          src="https://i.ibb.co/8nWqdg7/image.png" 
+          src="https://i.ibb.co/Jw5fT24C/image.png" 
           alt="AI Vision Detection" 
           className="w-full h-full object-cover opacity-90"
         />
@@ -76,52 +76,6 @@ const features = [
     )
   },
   { 
-    title: "Mobile Control Center", 
-    desc: "Set spending limits, approve purchases, view order history, and manage product preferences through an intuitive mobile app.",
-    color: "accent",
-    visual: (
-      <div className="relative w-full h-full min-h-[180px] bg-gradient-to-br from-accent/10 to-muted/5 rounded-lg p-4 flex items-center justify-center">
-        <div className="w-32 h-48 bg-card rounded-2xl border-2 border-border shadow-xl p-2 flex flex-col">
-          <div className="flex-1 bg-background/50 rounded-xl p-2 space-y-1">
-            <div className="h-2 w-3/4 bg-accent/30 rounded"></div>
-            <div className="h-2 w-1/2 bg-accent/20 rounded"></div>
-            <div className="mt-2 space-y-1">
-              <div className="h-8 bg-accent/10 rounded"></div>
-              <div className="h-8 bg-muted/10 rounded"></div>
-            </div>
-          </div>
-          <div className="h-1 w-8 mx-auto mt-1 bg-border rounded-full"></div>
-        </div>
-      </div>
-    )
-  },
-  { 
-    title: "Visa Fraud Protection", 
-    desc: "Enterprise-grade Visa security with real-time fraud detection ensures every autonomous transaction is protected with bank-level safeguards.",
-    color: "success",
-    visual: (
-      <div className="relative w-full h-full min-h-[180px] bg-gradient-to-br from-success/10 to-muted/5 rounded-lg p-4 flex items-center justify-center">
-        <div className="relative">
-          <motion.div
-            animate={{ rotate: [0, 5, -5, 0] }}
-            transition={{ duration: 3, repeat: Infinity }}
-            className="w-20 h-20 mx-auto mb-3 rounded-xl bg-gradient-to-br from-success/30 to-muted/10 border-2 border-success/30"
-          ></motion.div>
-          <div className="space-y-1.5">
-            <div className="flex items-center justify-between px-3 py-1.5 bg-card rounded-lg border border-success/30">
-              <span className="text-xs text-muted-foreground">Security</span>
-              <span className="text-xs font-bold text-success">✓ Active</span>
-            </div>
-            <div className="flex items-center justify-between px-3 py-1.5 bg-card rounded-lg border border-success/30">
-              <span className="text-xs text-muted-foreground">Encryption</span>
-              <span className="text-xs font-bold text-success">256-bit</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    )
-  },
-  { 
     title: "Smart Budget Analytics", 
     desc: "Track household spending patterns, get insights on consumption habits, and receive recommendations to optimize recurring purchases.",
     color: "accent",
@@ -156,37 +110,6 @@ const features = [
         </div>
       </div>
     )
-  },
-  { 
-    title: "Instant Activation", 
-    desc: "Set up in minutes with existing Visa cards. No complex integrations—our AI adapts to your home and learns your preferences automatically.",
-    color: "accent",
-    visual: (
-      <div className="relative w-full h-full min-h-[180px] bg-gradient-to-br from-accent/10 to-muted/5 rounded-lg p-4 flex items-center justify-center">
-        <div className="space-y-3 w-full">
-          <div className="text-center">
-            <motion.div
-              animate={{ scale: [1, 1.2, 1] }}
-              transition={{ duration: 2, repeat: Infinity }}
-              className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-accent/30 to-muted/10 border-2 border-accent/30 mb-2"
-            ></motion.div>
-            <div className="text-sm font-bold text-accent">5 minutes</div>
-            <div className="text-xs text-muted-foreground">Setup Time</div>
-          </div>
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex-1 text-center py-2 rounded-lg bg-success/20 border border-success/30">
-              <div className="text-xs font-semibold text-success">Link Card</div>
-            </div>
-            <div className="flex-1 text-center py-2 rounded-lg bg-success/20 border border-success/30">
-              <div className="text-xs font-semibold text-success">Set Limits</div>
-            </div>
-            <div className="flex-1 text-center py-2 rounded-lg bg-accent/20 border border-accent/30">
-              <div className="text-xs font-semibold text-accent">Done</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    )
   }
 ];
 
@@ -215,7 +138,7 @@ const Features = () => (
         </p>
       </motion.div>
 
-      <div className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="mt-16 grid gap-6 lg:grid-cols-3">
         {features.map((f, i) => (
           <motion.div
             key={f.title}
@@ -232,12 +155,7 @@ const Features = () => (
             
             {/* Content */}
             <div className="p-6">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-accent/10 border border-accent/20 transition-all group-hover:scale-110">
-                  <div className="w-4 h-4 rounded bg-accent/30"></div>
-                </div>
-                <h3 className="font-display text-lg font-semibold text-foreground">{f.title}</h3>
-              </div>
+              <h3 className="font-display text-lg font-semibold text-foreground mb-3">{f.title}</h3>
               <p className="text-sm leading-relaxed text-muted-foreground">{f.desc}</p>
             </div>
           </motion.div>

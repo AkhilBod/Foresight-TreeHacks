@@ -6,9 +6,9 @@ const steps = [
     desc: "Ambient cameras detect you washing dishes without soap, or cooking without oil—identifying usage patterns non-intrusively.",
     example: "Dish soap: 15% empty",
     visual: (
-      <div className="relative max-w-md mx-auto h-72 bg-gradient-to-br from-accent/10 to-muted/5 rounded-lg overflow-hidden border border-accent/20 flex items-center justify-center">
+      <div className="relative max-w-md mx-auto h-96 bg-gradient-to-br from-accent/10 to-muted/5 rounded-lg overflow-hidden border border-accent/20 flex items-center justify-center">
         <img 
-          src="https://i.ibb.co/Kj7YRVr7/homemade-hand-sanitizer-made-lime-dish-soap-homemade-hand-sanitizer-made-lime-dish-soap-201392642.webp" 
+          src="https://i.ibb.co/8nWqdg74/image.png" 
           alt="Dawn Dish Soap Detection" 
           className="w-full h-full object-cover opacity-90"
         />
@@ -33,7 +33,7 @@ const steps = [
   { 
     title: "Predictive Analysis", 
     desc: "Machine learning models calculate when you'll run out based on historical usage, predicting 3-5 days before depletion.",
-    example: "Reorder in 3 days",
+    example: "Reorder in 8 days",
     visual: (
       <div className="relative w-full h-64 bg-gradient-to-br from-accent/10 to-accent/5 rounded-lg p-4 border border-accent/20">
         <div className="w-full h-full flex flex-col">
