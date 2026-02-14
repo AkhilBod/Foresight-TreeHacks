@@ -18,14 +18,14 @@ const features = [
             <Camera className="text-primary/50" size={20} />
           </div>
           <div className="grid grid-cols-3 gap-2">
-            <div className="aspect-square rounded-lg bg-card border border-border flex items-center justify-center text-2xl">
-              🧼
+            <div className="aspect-square rounded-lg bg-card border border-border flex items-center justify-center">
+              <div className="w-8 h-8 rounded bg-primary/20 border border-primary/30"></div>
             </div>
-            <div className="aspect-square rounded-lg bg-card border border-border flex items-center justify-center text-2xl opacity-60">
-              🍳
+            <div className="aspect-square rounded-lg bg-card border border-border flex items-center justify-center opacity-60">
+              <div className="w-8 h-8 rounded bg-primary/20 border border-primary/30"></div>
             </div>
-            <div className="aspect-square rounded-lg bg-card border border-border flex items-center justify-center text-2xl opacity-40">
-              ☕
+            <div className="aspect-square rounded-lg bg-card border border-border flex items-center justify-center opacity-40">
+              <div className="w-8 h-8 rounded bg-primary/20 border border-primary/30"></div>
             </div>
           </div>
           <div className="flex items-center justify-between px-3 py-2 bg-card rounded-lg border border-primary/30">
@@ -52,7 +52,7 @@ const features = [
           </div>
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded bg-accent/20 flex items-center justify-center text-xs">📊</div>
+              <div className="w-6 h-6 rounded bg-accent/20 border border-accent/30"></div>
               <div className="flex-1 h-2 bg-card rounded-full overflow-hidden">
                 <motion.div 
                   initial={{ width: 0 }}
@@ -63,7 +63,7 @@ const features = [
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded bg-accent/20 flex items-center justify-center text-xs">🎯</div>
+              <div className="w-6 h-6 rounded bg-accent/20 border border-accent/30"></div>
               <div className="flex-1 h-2 bg-card rounded-full overflow-hidden">
                 <motion.div 
                   initial={{ width: 0 }}
@@ -74,7 +74,7 @@ const features = [
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded bg-accent/20 flex items-center justify-center text-xs">⚡</div>
+              <div className="w-6 h-6 rounded bg-accent/20 border border-accent/30"></div>
               <div className="flex-1 h-2 bg-card rounded-full overflow-hidden">
                 <motion.div 
                   initial={{ width: 0 }}
@@ -203,16 +203,13 @@ const features = [
           </div>
           <div className="flex items-center justify-between gap-2">
             <div className="flex-1 text-center py-2 rounded-lg bg-success/20 border border-success/30">
-              <div className="text-lg font-bold text-success">✓</div>
-              <div className="text-xs text-muted-foreground">Link Card</div>
+              <div className="text-xs font-semibold text-success">Link Card</div>
             </div>
             <div className="flex-1 text-center py-2 rounded-lg bg-success/20 border border-success/30">
-              <div className="text-lg font-bold text-success">✓</div>
-              <div className="text-xs text-muted-foreground">Set Limits</div>
+              <div className="text-xs font-semibold text-success">Set Limits</div>
             </div>
             <div className="flex-1 text-center py-2 rounded-lg bg-primary/20 border border-primary/30">
-              <div className="text-lg font-bold text-primary">→</div>
-              <div className="text-xs text-muted-foreground">Done</div>
+              <div className="text-xs font-semibold text-primary">Done</div>
             </div>
           </div>
         </div>

@@ -91,7 +91,7 @@ const UseCases = () => (
                 <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-accent/10 text-accent transition-all group-hover:scale-110">
                   <useCase.icon size={24} />
                 </div>
-                <span className="text-xs font-mono text-accent bg-accent/10 px-2 py-1 rounded">
+                <span className="text-xs font-mono text-accent bg-accent/10 px-2 py-1 rounded border border-accent/20">
                   AI Detected
                 </span>
               </div>

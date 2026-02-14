@@ -7,17 +7,17 @@ const steps = [
     icon: CameraIcon, 
     title: "AI Vision Observes", 
     desc: "Ambient cameras detect you washing dishes without soap, or cooking without oil—identifying usage patterns non-intrusively.",
-    example: "🧼 Dish soap: 85% empty",
+    example: "Dish soap: 85% empty",
     visual: (
       <div className="relative w-full h-48 bg-gradient-to-br from-primary/10 to-primary/5 rounded-lg p-4 flex items-center justify-center border border-primary/20">
-        <div className="text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/20 border border-primary/30 mb-2">
+        <div className="text-center w-full">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/20 border border-primary/30 mb-4">
             <div className="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
             <span className="text-xs font-semibold text-primary">Camera Active</span>
           </div>
           <div className="mt-4 space-y-2">
-            <div className="flex items-center gap-2 bg-card/50 rounded-lg p-2 border border-border">
-              <div className="w-8 h-8 rounded bg-primary/20 flex items-center justify-center text-xs">🧼</div>
+            <div className="flex items-center gap-3 bg-card/50 rounded-lg p-3 border border-border">
+              <div className="w-8 h-8 rounded bg-primary/20 border border-primary/30"></div>
               <div className="text-left flex-1">
                 <div className="text-xs font-semibold text-foreground">Dish Soap</div>
                 <div className="text-xs text-muted-foreground">Dawn Ultra</div>
@@ -33,7 +33,7 @@ const steps = [
     icon: BrainIcon, 
     title: "Predictive Analysis", 
     desc: "Machine learning models calculate when you'll run out based on historical usage, predicting 3-5 days before depletion.",
-    example: "📊 Reorder in 3 days",
+    example: "Reorder in 3 days",
     visual: (
       <div className="relative w-full h-48 bg-gradient-to-br from-accent/10 to-accent/5 rounded-lg p-4 flex items-center justify-center border border-accent/20">
         <div className="w-full">
@@ -75,18 +75,18 @@ const steps = [
     icon: CartIcon, 
     title: "Smart Notification", 
     desc: "You receive a mobile notification with product details, pricing, and the option to approve, modify, or reject the order.",
-    example: "✅ Approve $12.99",
+    example: "Approve $12.99",
     visual: (
       <div className="relative w-full h-48 bg-gradient-to-br from-primary/10 to-primary/5 rounded-lg p-4 flex items-center justify-center border border-primary/20">
         <div className="w-full max-w-[200px] bg-card rounded-xl shadow-xl border border-border p-3">
-          <div className="flex items-start gap-2 mb-2">
-            <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center text-lg">🧼</div>
+          <div className="flex items-start gap-2 mb-3">
+            <div className="w-10 h-10 rounded-lg bg-primary/20 border border-primary/30"></div>
             <div className="flex-1">
               <div className="text-xs font-bold text-foreground">Dawn Dish Soap</div>
               <div className="text-xs text-muted-foreground">Ultra Concentrate</div>
             </div>
           </div>
-          <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center justify-between mb-3">
             <span className="text-xs text-muted-foreground">Price</span>
             <span className="text-sm font-bold text-foreground">$12.99</span>
           </div>
@@ -94,8 +94,8 @@ const steps = [
             <button className="flex-1 py-1.5 rounded-md bg-primary text-primary-foreground text-xs font-semibold">
               Approve
             </button>
-            <button className="px-2 py-1.5 rounded-md border border-border text-xs">
-              ✕
+            <button className="px-3 py-1.5 rounded-md border border-border text-xs text-muted-foreground">
+              Reject
             </button>
           </div>
         </div>
@@ -106,10 +106,10 @@ const steps = [
     icon: CardIcon, 
     title: "Visa Secure Payment", 
     desc: "Once approved, Visa processes the payment with fraud protection and the product is delivered to your door automatically.",
-    example: "🔒 Visa secured",
+    example: "Visa secured",
     visual: (
       <div className="relative w-full h-48 bg-gradient-to-br from-success/10 to-success/5 rounded-lg p-4 flex items-center justify-center border border-success/20">
-        <div className="text-center space-y-3">
+        <div className="text-center space-y-3 w-full">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-success/20 border border-success/30">
             <div className="w-3 h-3 rounded-full bg-success flex items-center justify-center">
               <div className="w-1.5 h-1.5 rounded-full bg-white"></div>
@@ -120,20 +120,26 @@ const steps = [
           <div className="space-y-2">
             <div className="flex items-center justify-between px-3 py-2 bg-card/50 rounded-lg border border-border">
               <span className="text-xs text-muted-foreground">Visa •••• 4242</span>
-              <span className="text-xs font-bold text-success">✓</span>
+              <div className="w-4 h-4 rounded-full bg-success/20 border border-success flex items-center justify-center">
+                <div className="w-1.5 h-1.5 rounded-full bg-success"></div>
+              </div>
             </div>
             <div className="flex items-center justify-between px-3 py-2 bg-card/50 rounded-lg border border-border">
               <span className="text-xs text-muted-foreground">Fraud Check</span>
-              <span className="text-xs font-bold text-success">✓</span>
+              <div className="w-4 h-4 rounded-full bg-success/20 border border-success flex items-center justify-center">
+                <div className="w-1.5 h-1.5 rounded-full bg-success"></div>
+              </div>
             </div>
             <div className="flex items-center justify-between px-3 py-2 bg-card/50 rounded-lg border border-border">
               <span className="text-xs text-muted-foreground">Order Placed</span>
-              <span className="text-xs font-bold text-success">✓</span>
+              <div className="w-4 h-4 rounded-full bg-success/20 border border-success flex items-center justify-center">
+                <div className="w-1.5 h-1.5 rounded-full bg-success"></div>
+              </div>
             </div>
           </div>
           
           <div className="inline-block px-3 py-1.5 rounded-lg bg-primary/20 text-primary text-xs font-semibold border border-primary/30">
-            🚚 Delivery: 2 days
+            Delivery: 2 days
           </div>
         </div>
       </div>
