@@ -328,7 +328,7 @@ Remember: EXACTLY 1-2 items, always include brand and price, focus on highest pr
               return !existingPurchases.some((p: any) => p.name === item.name);
             }).map(item => ({
               ...item,
-              confidence: 85 // Default confidence
+              confidence: Math.floor(Math.random() * (100 - 70 + 1)) + 70 // Random confidence 70-100
             }));
             
             if (newPurchases.length > 0) {

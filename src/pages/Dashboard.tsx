@@ -79,17 +79,6 @@ const Sidebar = ({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => 
   );
 };
 
-// --- Spending Chart Data ---
-const chartData = [
-  { day: "Mon", amount: 12 },
-  { day: "Tue", amount: 28 },
-  { day: "Wed", amount: 8 },
-  { day: "Thu", amount: 45 },
-  { day: "Fri", amount: 22 },
-  { day: "Sat", amount: 35 },
-  { day: "Sun", amount: 15 },
-];
-
 // --- Activity items ---
 interface ActivityItem {
   time: string;
@@ -117,6 +106,17 @@ const Dashboard = () => {
   const [activityItems, setActivityItems] = useState<ActivityItem[]>([]);
   const [buyingItem, setBuyingItem] = useState<string | null>(null);
   const [buyingStage, setBuyingStage] = useState<'amazon' | 'visa' | null>(null);
+  const [monthlySpend, setMonthlySpend] = useState(142.30);
+  const [itemsOrdered, setItemsOrdered] = useState(23);
+  const [chartData, setChartData] = useState([
+    { day: "Mon", amount: 12 },
+    { day: "Tue", amount: 28 },
+    { day: "Wed", amount: 8 },
+    { day: "Thu", amount: 45 },
+    { day: "Fri", amount: 22 },
+    { day: "Sat", amount: 35 },
+    { day: "Sun", amount: 15 },
+  ]);
 
   // Helper to format relative time
   const getRelativeTime = (timestamp: number) => {
@@ -154,9 +154,11 @@ const Dashboard = () => {
               seenItemsRef.current.add(itemKey);
               
               setActivityItems(prev => {
+                // Format status text: "Low" stays as "Low", "Missing/Empty" become "Missing"
+                const statusText = item.status === "Low" ? "Low" : "Missing";
                 const newActivity: ActivityItem = {
                   time: getRelativeTime(item.timestamp),
-                  text: `${item.name} detected - ${item.status}`,
+                  text: `${item.name} - ${statusText}`,
                   status: "pending",
                   timestamp: item.timestamp
                 };
@@ -191,6 +193,10 @@ const Dashboard = () => {
   }, []);
 
   const handleApprove = (name: string) => {
+    // Get the item price before removing it
+    const item = purchases.find(p => p.name === name);
+    const itemPrice = item?.price || 0;
+    
     // Start buying process
     setBuyingItem(name);
     setBuyingStage('amazon');
@@ -203,6 +209,17 @@ const Dashboard = () => {
       setTimeout(() => {
         setBuyingItem(null);
         setBuyingStage(null);
+        
+        // Update stats
+        setMonthlySpend(prev => Math.round((prev + itemPrice) * 100) / 100);
+        setItemsOrdered(prev => prev + 1);
+        
+        // Update today's spending in chart (Sunday)
+        setChartData(prev => {
+          const updated = [...prev];
+          updated[6] = { ...updated[6], amount: updated[6].amount + itemPrice };
+          return updated;
+        });
         
         // Add to activity
         setActivityItems(prev => [{
@@ -238,10 +255,25 @@ const Dashboard = () => {
   };
 
   const handleApproveAll = () => {
+    // Calculate total price of all purchases
+    const totalPrice = purchases.reduce((sum, p) => sum + (p.price || 0), 0);
+    const itemCount = purchases.length;
+    
+    // Update stats
+    setMonthlySpend(prev => Math.round((prev + totalPrice) * 100) / 100);
+    setItemsOrdered(prev => prev + itemCount);
+    
+    // Update today's spending in chart (Sunday)
+    setChartData(prev => {
+      const updated = [...prev];
+      updated[6] = { ...updated[6], amount: updated[6].amount + totalPrice };
+      return updated;
+    });
+    
     // Add to activity
     setActivityItems(prev => [{
       time: "Just now",
-      text: `Approved ${purchases.length} items`,
+      text: `Approved ${itemCount} items`,
       status: "approved" as const,
       timestamp: Date.now()
     }, ...prev].slice(0, 10));
@@ -285,8 +317,8 @@ const Dashboard = () => {
               {/* Top Stats */}
           <div className="grid gap-4 sm:grid-cols-3">
             {[
-              { label: "Monthly Spend", value: "$142.30", sub: "of $200 budget" },
-              { label: "Items Ordered", value: "23", sub: "this month" },
+              { label: "Monthly Spend", value: `$${monthlySpend.toFixed(2)}`, sub: `of $${budget[0]} budget` },
+              { label: "Items Ordered", value: String(itemsOrdered), sub: "this month" },
               { label: "Pending", value: String(purchases.length), sub: "items to review" },
             ].map((stat) => (
               <motion.div
