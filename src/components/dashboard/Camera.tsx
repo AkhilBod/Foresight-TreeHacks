@@ -38,19 +38,52 @@ const Camera = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const analysisIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const [isActive, setIsActive] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [detectedItems, setDetectedItems] = useState<DetectedItem[]>([]);
   const [recentActivities, setRecentActivities] = useState<Activity[]>([]);
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+  const [autoAnalyze, setAutoAnalyze] = useState(true);
 
   const GEMINI_API_KEY = "REMOVED_API_KEY";
 
   useEffect(() => {
     return () => {
       stopCamera();
+      if (analysisIntervalRef.current) {
+        clearInterval(analysisIntervalRef.current);
+      }
     };
   }, []);
+
+  // Auto-analysis effect for live camera feed
+  useEffect(() => {
+    if (isActive && autoAnalyze && !uploadedImage) {
+      // Start analyzing every 5 seconds
+      analysisIntervalRef.current = setInterval(() => {
+        captureAndAnalyze();
+      }, 5000);
+
+      // Also run analysis immediately when camera starts
+      const initialTimeout = setTimeout(() => {
+        captureAndAnalyze();
+      }, 1000);
+
+      return () => {
+        if (analysisIntervalRef.current) {
+          clearInterval(analysisIntervalRef.current);
+        }
+        clearTimeout(initialTimeout);
+      };
+    } else {
+      // Clear interval when camera is stopped or auto-analyze is disabled
+      if (analysisIntervalRef.current) {
+        clearInterval(analysisIntervalRef.current);
+        analysisIntervalRef.current = null;
+      }
+    }
+  }, [isActive, autoAnalyze, uploadedImage]);
 
   const startCamera = async () => {
     try {
@@ -118,55 +151,70 @@ const Camera = () => {
 
 YOUR TASK: Analyze this image and identify items that are LOW, EMPTY, or MISSING from their expected location.
 
+STATUS DEFINITIONS:
+- "Low" = Item is visible but container is less than 25% full
+- "Empty" = Item/container is visible but completely depleted (e.g., empty bottle visible)
+- "Missing" = Item should be present in this location but is not visible at all
+
 CRITICAL RULES:
 1. Identify what area/fixture is visible (toilet, sink, shower, counter, etc.)
 2. For THAT specific area, check if expected items are present and stocked
-3. Flag items as Empty if they should be visible in their typical spot but aren't
-4. Flag items as Low if visible containers are less than 25% full
-5. ONLY check for items relevant to the visible fixture/area
-6. DO NOT flag items for fixtures/areas that aren't visible in the image
+3. Use "Missing" when item should be there but isn't visible
+4. Use "Empty" when container/holder is visible but depleted
+5. Use "Low" when visible container is less than 25% full
+6. ONLY check for items relevant to the visible fixture/area
 
 CONTEXT-BASED DETECTION:
 
 TOILET VISIBLE:
 - Check for: Toilet Paper (on holder or nearby shelf)
-- If toilet paper holder is empty or no toilet paper visible near toilet → Flag "Toilet Paper" as Empty
+- If toilet paper holder visible but no roll → "Toilet Paper" status: "Empty"
+- If no toilet paper holder or paper visible where it should be → "Toilet Paper" status: "Missing"
 - Optionally check: Bathroom Cleaner (if storage area visible)
 
 BATHROOM SINK VISIBLE:
 - Check for: Hand Soap (dispenser or bottle at/near sink)
-- If no soap visible at the sink → Flag "Hand Soap" as Empty
-- If soap bottle is less than 25% full → Flag "Hand Soap" as Low
+- If empty soap dispenser visible → "Hand Soap" status: "Empty"
+- If no soap visible where it should be → "Hand Soap" status: "Missing"
+- If soap bottle less than 25% full → "Hand Soap" status: "Low"
 
 KITCHEN SINK VISIBLE:
 - Check for: Dish Soap (at/near sink), Hand Soap (if sink area)
-- If no dish soap visible → Flag "Dish Soap" as Empty
+- If empty bottle visible → status: "Empty"
+- If no dish soap visible → status: "Missing"
+- If bottle nearly empty → status: "Low"
 - Check for: Sponges (at sink area)
 
 SHOWER/TUB VISIBLE:
 - Check for: Shampoo, Conditioner, Body Wash (on caddy/shelf/ledge)
-- If shower area is visible but item is missing → Flag as Empty
-- If bottle is nearly empty → Flag as Low
+- If empty bottle visible in shower → status: "Empty"
+- If no bottles in shower where they should be → status: "Missing"
+- If bottle nearly empty → status: "Low"
 
 KITCHEN COUNTER VISIBLE:
 - Check for: Paper Towels (on holder), Cooking Oil (near stove)
-- If paper towel holder is empty → Flag "Paper Towels" as Empty
+- If paper towel holder empty → "Paper Towels" status: "Empty"
+- If no paper towel holder or towels visible → "Paper Towels" status: "Missing"
 
 DETECTION GUIDELINES:
-✓ Toilet visible but NO toilet paper on holder or nearby → "Toilet Paper" Empty
-✓ Sink visible but NO soap dispenser/bottle → "Hand Soap" Empty  
-✓ Empty paper towel holder on counter → "Paper Towels" Empty
-✓ Shower visible but no shampoo bottles → "Shampoo" Empty
-✓ Visible bottle/container less than 25% full → Item "Low"
+✓ Toilet with no paper on visible holder → "Toilet Paper" Empty
+✓ Toilet area with no holder or paper anywhere → "Toilet Paper" Missing
+✓ Sink with empty soap dispenser → "Hand Soap" Empty
+✓ Sink with no soap anywhere → "Hand Soap" Missing
+✓ Visible bottle less than 25% full → Item "Low"
+✓ Empty bottle/container still present → Item "Empty"
 
-Return ONLY a JSON array. Examples:
-Toilet visible, no toilet paper: [{"name":"Toilet Paper","status":"Empty"}]
-Bathroom sink with no soap: [{"name":"Hand Soap","status":"Empty"}]
-Kitchen sink with low dish soap bottle: [{"name":"Dish Soap","status":"Low"}]
-Shower with no shampoo bottles: [{"name":"Shampoo","status":"Empty"}]
-Toilet with toilet paper present: []
+Return ONLY a JSON array with name and status. Examples:
+Toilet with empty holder: [{"name":"Toilet Paper","status":"Empty"}]
+Toilet with no toilet paper visible: [{"name":"Toilet Paper","status":"Missing"}]
+Bathroom sink with empty soap dispenser: [{"name":"Hand Soap","status":"Empty"}]
+Bathroom sink with no soap: [{"name":"Hand Soap","status":"Missing"}]
+Kitchen sink with low dish soap: [{"name":"Dish Soap","status":"Low"}]
+Shower with empty shampoo bottle visible: [{"name":"Shampoo","status":"Empty"}]
+Shower with no products visible: [{"name":"Shampoo","status":"Missing"},{"name":"Body Wash","status":"Missing"}]
+All items present and stocked: []
 
-IMPORTANT: Only check for items that should be present in the VISIBLE fixture/area. If you see a toilet, check for toilet paper. If you see a shower, check for shower items. Do NOT check for shower items if only a toilet is visible.`,
+IMPORTANT: Be precise with status. "Empty" means the container is there but depleted. "Missing" means the item isn't there at all. "Low" means running low but not empty.`,
                   },
                   {
                     inline_data: {
@@ -230,7 +278,7 @@ IMPORTANT: Only check for items that should be present in the VISIBLE fixture/ar
     }
   };
 
-  const captureAndAnalyze = async () => {
+  const captureAndAnalyze = async (silent: boolean = false) => {
     setIsAnalyzing(true);
     
     if (uploadedImage) {
@@ -241,7 +289,9 @@ IMPORTANT: Only check for items that should be present in the VISIBLE fixture/ar
         await analyzeImageWithGemini(base64Image);
       } catch (error) {
         console.error("Error analyzing uploaded image:", error);
-        alert("Error analyzing image. Please try again.");
+        if (!silent) {
+          alert("Error analyzing image. Please try again.");
+        }
       } finally {
         setIsAnalyzing(false);
       }
@@ -256,6 +306,13 @@ IMPORTANT: Only check for items that should be present in the VISIBLE fixture/ar
     // Capture frame from video
     const canvas = canvasRef.current;
     const video = videoRef.current;
+    
+    // Make sure video has loaded
+    if (video.videoWidth === 0 || video.videoHeight === 0) {
+      setIsAnalyzing(false);
+      return;
+    }
+    
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
     const ctx = canvas.getContext("2d");
@@ -275,7 +332,9 @@ IMPORTANT: Only check for items that should be present in the VISIBLE fixture/ar
       await analyzeImageWithGemini(base64Image);
     } catch (error) {
       console.error("Error analyzing image:", error);
-      alert("Error analyzing image. Please try again.");
+      if (!silent) {
+        alert("Error analyzing image. Please try again.");
+      }
     } finally {
       setIsAnalyzing(false);
     }
@@ -321,11 +380,21 @@ IMPORTANT: Only check for items that should be present in the VISIBLE fixture/ar
               ) : (
                 <>
                   <button
-                    onClick={captureAndAnalyze}
-                    disabled={isAnalyzing}
-                    className="px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                    onClick={() => setAutoAnalyze(!autoAnalyze)}
+                    className={`px-4 py-2 rounded-lg transition-colors font-semibold ${
+                      autoAnalyze 
+                        ? 'bg-accent text-white hover:bg-accent/90' 
+                        : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
+                    }`}
                   >
-                    {isAnalyzing ? "Detecting Depletion..." : "Detect Items"}
+                    {autoAnalyze ? "Auto-Analyze: ON" : "Auto-Analyze: OFF"}
+                  </button>
+                  <button
+                    onClick={() => captureAndAnalyze(false)}
+                    disabled={isAnalyzing}
+                    className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isAnalyzing ? "Analyzing..." : "Analyze Now"}
                   </button>
                   <button
                     onClick={stopCamera}
@@ -360,7 +429,7 @@ IMPORTANT: Only check for items that should be present in the VISIBLE fixture/ar
                 <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent/90 backdrop-blur-sm border border-accent/30">
                   <div className="w-2 h-2 rounded-full bg-white animate-pulse"></div>
                   <span className="text-xs font-semibold text-white">
-                    {uploadedImage ? "Image Loaded" : "Vision Active"}
+                    {uploadedImage ? "Image Loaded" : autoAnalyze ? "Auto-Analyzing" : "Vision Active"}
                   </span>
                 </div>
               </div>
