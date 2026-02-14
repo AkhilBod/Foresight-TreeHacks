@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRightIcon, MenuIcon, XIcon } from "@/components/icons";
 
 const navLinks = [
   { label: "How It Works", href: "#how-it-works" },
@@ -39,7 +38,6 @@ const Navbar = () => {
             className="inline-flex h-9 items-center gap-2 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-all hover:opacity-90"
           >
             Get Started
-            <ArrowRightIcon size={14} />
           </Link>
         </div>
 
@@ -47,7 +45,18 @@ const Navbar = () => {
           className="md:hidden text-foreground"
           onClick={() => setMobileOpen(!mobileOpen)}
         >
-          {mobileOpen ? <XIcon size={22} /> : <MenuIcon size={22} />}
+          {mobileOpen ? (
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          ) : (
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="3" y1="12" x2="21" y2="12"></line>
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+          )}
         </button>
       </div>
 
@@ -76,7 +85,6 @@ const Navbar = () => {
                 onClick={() => setMobileOpen(false)}
               >
                 Get Started
-                <ArrowRightIcon size={14} />
               </Link>
             </div>
           </motion.div>

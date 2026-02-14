@@ -1,5 +1,3 @@
-import { CheckIcon, XIcon } from "@/components/icons";
-
 const items = [
   { name: "Dish Soap", brand: "Dawn Ultra", price: "$4.99", confidence: 94 },
   { name: "Paper Towels", brand: "Bounty Select", price: "$12.49", confidence: 87 },
@@ -53,10 +51,10 @@ const HeroDashboardMockup = () => (
                 </div>
                 <div className="flex gap-1.5">
                   <button className="flex h-7 w-7 items-center justify-center rounded-md bg-primary/15 text-primary transition-colors hover:bg-primary/25">
-                    <CheckIcon size={14} />
+                    ✓
                   </button>
                   <button className="flex h-7 w-7 items-center justify-center rounded-md bg-destructive/15 text-destructive transition-colors hover:bg-destructive/25">
-                    <XIcon size={14} />
+                    ✕
                   </button>
                 </div>
               </div>

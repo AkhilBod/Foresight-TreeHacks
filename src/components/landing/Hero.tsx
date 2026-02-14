@@ -1,6 +1,5 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowRightIcon } from "@/components/icons";
 import HeroDashboardMockup from "./HeroDashboardMockup";
 
 const Hero = () => (
@@ -30,7 +29,6 @@ const Hero = () => (
             className="inline-flex h-12 items-center gap-2 rounded-lg bg-primary px-8 text-sm font-semibold text-primary-foreground transition-all hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/20"
           >
             Get Started
-            <ArrowRightIcon size={16} />
           </Link>
         </div>
         

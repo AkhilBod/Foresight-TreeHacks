@@ -1,9 +1,7 @@
 import { motion } from "framer-motion";
-import { Utensils, Droplets, Lightbulb, Baby, Coffee, Sparkles } from "lucide-react";
 
 const useCases = [
   {
-    icon: Droplets,
     title: "Kitchen Essentials",
     scenario: "Washing dishes without soap",
     detection: "Camera notices empty soap dispenser during routine dish washing",
@@ -11,7 +9,6 @@ const useCases = [
     color: "from-blue-500/20 to-cyan-500/20"
   },
   {
-    icon: Utensils,
     title: "Cooking Supplies",
     scenario: "Cooking without oil",
     detection: "AI observes you reaching for missing cooking oil multiple times",
@@ -19,7 +16,6 @@ const useCases = [
     color: "from-orange-500/20 to-amber-500/20"
   },
   {
-    icon: Coffee,
     title: "Beverages",
     scenario: "Morning coffee routine",
     detection: "Tracks daily coffee consumption patterns",
@@ -27,7 +23,6 @@ const useCases = [
     color: "from-amber-700/20 to-yellow-600/20"
   },
   {
-    icon: Baby,
     title: "Baby Products",
     scenario: "Diaper supply low",
     detection: "Monitors diaper usage frequency and remaining quantity",
@@ -35,7 +30,6 @@ const useCases = [
     color: "from-pink-500/20 to-rose-500/20"
   },
   {
-    icon: Sparkles,
     title: "Cleaning Supplies",
     scenario: "Laundry detergent empty",
     detection: "Recognizes washing machine usage without detergent",
@@ -43,7 +37,6 @@ const useCases = [
     color: "from-purple-500/20 to-violet-500/20"
   },
   {
-    icon: Lightbulb,
     title: "Household Items",
     scenario: "Light bulbs burned out",
     detection: "Identifies bulb failures through ambient lighting changes",
@@ -64,7 +57,6 @@ const UseCases = () => (
         className="text-center"
       >
         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/10 border border-accent/20 mb-4">
-          <Sparkles size={16} className="text-accent" />
           <span className="text-accent font-semibold text-sm">Use Cases</span>
         </div>
         <h2 className="font-display text-4xl font-bold text-foreground sm:text-5xl">
@@ -88,8 +80,7 @@ const UseCases = () => (
             <div className={`absolute inset-0 rounded-xl bg-gradient-to-br ${useCase.color} opacity-0 group-hover:opacity-100 transition-opacity`}></div>
             <div className="relative">
               <div className="flex items-start justify-between mb-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-accent/10 text-accent transition-all group-hover:scale-110">
-                  <useCase.icon size={24} />
+                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-accent/10 border border-accent/20 transition-all group-hover:scale-110">
                 </div>
                 <span className="text-xs font-mono text-accent bg-accent/10 px-2 py-1 rounded border border-accent/20">
                   AI Detected

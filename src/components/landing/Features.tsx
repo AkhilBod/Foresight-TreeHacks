@@ -1,43 +1,33 @@
 import { motion } from "framer-motion";
-import { Camera, ShoppingCart, Smartphone, Shield, TrendingUp, Zap } from "lucide-react";
 
 const features = [
   { 
-    icon: Camera, 
     title: "Ambient AI Vision", 
     desc: "Computer vision cameras observe your daily routines—like washing dishes without soap—and identify when essentials are running low without being intrusive.",
-    color: "primary",
+    color: "accent",
     visual: (
-      <div className="relative w-full h-full min-h-[180px] bg-gradient-to-br from-primary/10 to-primary/5 rounded-lg p-4 flex items-center justify-center">
-        <div className="space-y-3 w-full">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
-              <span className="text-xs font-semibold text-primary">Live Detection</span>
-            </div>
-            <Camera className="text-primary/50" size={20} />
+      <div className="relative w-full h-full min-h-[180px] bg-gradient-to-br from-accent/10 to-muted/5 rounded-lg overflow-hidden">
+        <img 
+          src="https://ibb.co/LDLmJdZh" 
+          alt="AI Vision Detection" 
+          className="w-full h-full object-cover opacity-90"
+        />
+        <div className="absolute top-3 left-3">
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent/90 backdrop-blur-sm border border-accent/30">
+            <div className="w-2 h-2 rounded-full bg-white animate-pulse"></div>
+            <span className="text-xs font-semibold text-white">Live Detection</span>
           </div>
-          <div className="grid grid-cols-3 gap-2">
-            <div className="aspect-square rounded-lg bg-card border border-border flex items-center justify-center">
-              <div className="w-8 h-8 rounded bg-primary/20 border border-primary/30"></div>
-            </div>
-            <div className="aspect-square rounded-lg bg-card border border-border flex items-center justify-center opacity-60">
-              <div className="w-8 h-8 rounded bg-primary/20 border border-primary/30"></div>
-            </div>
-            <div className="aspect-square rounded-lg bg-card border border-border flex items-center justify-center opacity-40">
-              <div className="w-8 h-8 rounded bg-primary/20 border border-primary/30"></div>
-            </div>
-          </div>
-          <div className="flex items-center justify-between px-3 py-2 bg-card rounded-lg border border-primary/30">
+        </div>
+        <div className="absolute bottom-3 left-3 right-3">
+          <div className="flex items-center justify-between px-3 py-2 bg-card/95 backdrop-blur-sm rounded-lg border border-accent/30">
             <span className="text-xs text-muted-foreground">Confidence</span>
-            <span className="text-xs font-bold text-primary">98.5%</span>
+            <span className="text-xs font-bold text-accent">98.5%</span>
           </div>
         </div>
       </div>
     )
   },
   { 
-    icon: ShoppingCart, 
     title: "Predictive Reordering", 
     desc: "Machine learning algorithms analyze consumption patterns and automatically trigger Visa payments to reorder products before you run out.",
     color: "accent",
@@ -46,13 +36,11 @@ const features = [
         <div className="space-y-3 w-full">
           <div className="text-center mb-2">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/20 border border-accent/30">
-              <TrendingUp size={12} className="text-accent" />
               <span className="text-xs font-semibold text-accent">Smart Analytics</span>
             </div>
           </div>
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded bg-accent/20 border border-accent/30"></div>
               <div className="flex-1 h-2 bg-card rounded-full overflow-hidden">
                 <motion.div 
                   initial={{ width: 0 }}
@@ -63,7 +51,6 @@ const features = [
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded bg-accent/20 border border-accent/30"></div>
               <div className="flex-1 h-2 bg-card rounded-full overflow-hidden">
                 <motion.div 
                   initial={{ width: 0 }}
@@ -74,7 +61,6 @@ const features = [
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded bg-accent/20 border border-accent/30"></div>
               <div className="flex-1 h-2 bg-card rounded-full overflow-hidden">
                 <motion.div 
                   initial={{ width: 0 }}
@@ -90,25 +76,18 @@ const features = [
     )
   },
   { 
-    icon: Smartphone, 
     title: "Mobile Control Center", 
     desc: "Set spending limits, approve purchases, view order history, and manage product preferences through an intuitive mobile app.",
-    color: "primary",
+    color: "accent",
     visual: (
-      <div className="relative w-full h-full min-h-[180px] bg-gradient-to-br from-primary/10 to-primary/5 rounded-lg p-4 flex items-center justify-center">
+      <div className="relative w-full h-full min-h-[180px] bg-gradient-to-br from-accent/10 to-muted/5 rounded-lg p-4 flex items-center justify-center">
         <div className="w-32 h-48 bg-card rounded-2xl border-2 border-border shadow-xl p-2 flex flex-col">
           <div className="flex-1 bg-background/50 rounded-xl p-2 space-y-1">
-            <div className="h-2 w-3/4 bg-primary/30 rounded"></div>
-            <div className="h-2 w-1/2 bg-primary/20 rounded"></div>
+            <div className="h-2 w-3/4 bg-accent/30 rounded"></div>
+            <div className="h-2 w-1/2 bg-accent/20 rounded"></div>
             <div className="mt-2 space-y-1">
-              <div className="h-8 bg-primary/10 rounded flex items-center justify-between px-2">
-                <div className="w-4 h-4 rounded bg-primary/30"></div>
-                <div className="h-1 w-8 bg-primary/30 rounded"></div>
-              </div>
-              <div className="h-8 bg-accent/10 rounded flex items-center justify-between px-2">
-                <div className="w-4 h-4 rounded bg-accent/30"></div>
-                <div className="h-1 w-8 bg-accent/30 rounded"></div>
-              </div>
+              <div className="h-8 bg-accent/10 rounded"></div>
+              <div className="h-8 bg-muted/10 rounded"></div>
             </div>
           </div>
           <div className="h-1 w-8 mx-auto mt-1 bg-border rounded-full"></div>
@@ -117,20 +96,17 @@ const features = [
     )
   },
   { 
-    icon: Shield, 
     title: "Visa Fraud Protection", 
     desc: "Enterprise-grade Visa security with real-time fraud detection ensures every autonomous transaction is protected with bank-level safeguards.",
     color: "success",
     visual: (
-      <div className="relative w-full h-full min-h-[180px] bg-gradient-to-br from-success/10 to-success/5 rounded-lg p-4 flex items-center justify-center">
+      <div className="relative w-full h-full min-h-[180px] bg-gradient-to-br from-success/10 to-muted/5 rounded-lg p-4 flex items-center justify-center">
         <div className="relative">
           <motion.div
             animate={{ rotate: [0, 5, -5, 0] }}
             transition={{ duration: 3, repeat: Infinity }}
-            className="w-20 h-20 mx-auto mb-3 rounded-xl bg-gradient-to-br from-success/30 to-success/10 border-2 border-success/30 flex items-center justify-center"
-          >
-            <Shield className="text-success" size={40} />
-          </motion.div>
+            className="w-20 h-20 mx-auto mb-3 rounded-xl bg-gradient-to-br from-success/30 to-muted/10 border-2 border-success/30"
+          ></motion.div>
           <div className="space-y-1.5">
             <div className="flex items-center justify-between px-3 py-1.5 bg-card rounded-lg border border-success/30">
               <span className="text-xs text-muted-foreground">Security</span>
@@ -146,12 +122,11 @@ const features = [
     )
   },
   { 
-    icon: TrendingUp, 
     title: "Smart Budget Analytics", 
     desc: "Track household spending patterns, get insights on consumption habits, and receive recommendations to optimize recurring purchases.",
     color: "accent",
     visual: (
-      <div className="relative w-full h-full min-h-[180px] bg-gradient-to-br from-accent/10 to-accent/5 rounded-lg p-4 flex items-center justify-center">
+      <div className="relative w-full h-full min-h-[180px] bg-gradient-to-br from-accent/10 to-muted/5 rounded-lg p-4 flex items-center justify-center">
         <div className="w-full space-y-3">
           <div className="text-center">
             <div className="text-2xl font-bold text-accent">$247</div>
@@ -164,17 +139,17 @@ const features = [
                 initial={{ height: 0 }}
                 whileInView={{ height: `${height}%` }}
                 transition={{ duration: 0.5, delay: i * 0.1 }}
-                className="flex-1 bg-gradient-to-t from-accent to-primary rounded-t"
+                className="flex-1 bg-gradient-to-t from-accent to-muted/50 rounded-t"
               ></motion.div>
             ))}
           </div>
           <div className="flex items-center justify-center gap-2 text-xs">
             <div className="flex items-center gap-1">
-              <div className="w-2 h-2 rounded-full bg-primary"></div>
+              <div className="w-2 h-2 rounded-full bg-accent"></div>
               <span className="text-muted-foreground">Spending</span>
             </div>
             <div className="flex items-center gap-1">
-              <div className="w-2 h-2 rounded-full bg-accent"></div>
+              <div className="w-2 h-2 rounded-full bg-muted"></div>
               <span className="text-muted-foreground">Budget</span>
             </div>
           </div>
@@ -183,21 +158,18 @@ const features = [
     )
   },
   { 
-    icon: Zap, 
     title: "Instant Activation", 
     desc: "Set up in minutes with existing Visa cards. No complex integrations—our AI adapts to your home and learns your preferences automatically.",
-    color: "primary",
+    color: "accent",
     visual: (
-      <div className="relative w-full h-full min-h-[180px] bg-gradient-to-br from-primary/10 to-primary/5 rounded-lg p-4 flex items-center justify-center">
+      <div className="relative w-full h-full min-h-[180px] bg-gradient-to-br from-accent/10 to-muted/5 rounded-lg p-4 flex items-center justify-center">
         <div className="space-y-3 w-full">
           <div className="text-center">
             <motion.div
               animate={{ scale: [1, 1.2, 1] }}
               transition={{ duration: 2, repeat: Infinity }}
-              className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-accent/30 to-accent/10 border-2 border-accent/30 mb-2"
-            >
-              <Zap className="text-accent" size={32} />
-            </motion.div>
+              className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-accent/30 to-muted/10 border-2 border-accent/30 mb-2"
+            ></motion.div>
             <div className="text-sm font-bold text-accent">5 minutes</div>
             <div className="text-xs text-muted-foreground">Setup Time</div>
           </div>
@@ -208,8 +180,8 @@ const features = [
             <div className="flex-1 text-center py-2 rounded-lg bg-success/20 border border-success/30">
               <div className="text-xs font-semibold text-success">Set Limits</div>
             </div>
-            <div className="flex-1 text-center py-2 rounded-lg bg-primary/20 border border-primary/30">
-              <div className="text-xs font-semibold text-primary">Done</div>
+            <div className="flex-1 text-center py-2 rounded-lg bg-accent/20 border border-accent/30">
+              <div className="text-xs font-semibold text-accent">Done</div>
             </div>
           </div>
         </div>
@@ -229,12 +201,12 @@ const Features = () => (
         transition={{ duration: 0.5 }}
         className="text-center"
       >
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-4">
-          <span className="text-primary font-semibold text-sm">Features</span>
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/10 border border-accent/20 mb-4">
+          <span className="text-accent font-semibold text-sm">Features</span>
         </div>
         <h2 className="font-display text-4xl font-bold text-foreground sm:text-5xl">
           Powerful Features for <br/>
-          <span className="bg-gradient-to-r from-primary via-primary to-accent bg-clip-text text-transparent">
+          <span className="bg-gradient-to-r from-accent via-accent to-muted bg-clip-text text-transparent">
             Behavior-Driven Commerce
           </span>
         </h2>
@@ -251,7 +223,7 @@ const Features = () => (
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: i * 0.1 }}
-            className="group flex flex-col rounded-xl border border-border bg-card overflow-hidden transition-all hover:-translate-y-1 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/10"
+            className="group flex flex-col rounded-xl border border-border bg-card overflow-hidden transition-all hover:-translate-y-1 hover:border-accent/30 hover:shadow-xl hover:shadow-accent/10"
           >
             {/* Visual Preview */}
             <div className="relative overflow-hidden">
@@ -261,8 +233,8 @@ const Features = () => (
             {/* Content */}
             <div className="p-6">
               <div className="flex items-center gap-3 mb-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary transition-all group-hover:scale-110">
-                  <f.icon size={20} />
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-accent/10 border border-accent/20 transition-all group-hover:scale-110">
+                  <div className="w-4 h-4 rounded bg-accent/30"></div>
                 </div>
                 <h3 className="font-display text-lg font-semibold text-foreground">{f.title}</h3>
               </div>
@@ -280,10 +252,10 @@ const Features = () => (
         transition={{ duration: 0.6, delay: 0.3 }}
         className="mt-20 grid gap-6 sm:grid-cols-3"
       >
-        <div className="relative group p-8 rounded-xl bg-card border border-border hover:border-primary/30 transition-all overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+        <div className="relative group p-8 rounded-xl bg-card border border-border hover:border-accent/30 transition-all overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-accent/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
           <div className="relative text-center">
-            <div className="text-5xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-2">99.9%</div>
+            <div className="text-5xl font-bold bg-gradient-to-r from-accent to-muted bg-clip-text text-transparent mb-2">99.9%</div>
             <div className="text-sm text-muted-foreground font-medium">Detection Accuracy</div>
             <div className="mt-2 text-xs text-muted-foreground/70">Powered by advanced computer vision</div>
           </div>
@@ -291,7 +263,7 @@ const Features = () => (
         <div className="relative group p-8 rounded-xl bg-card border border-border hover:border-accent/30 transition-all overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-accent/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
           <div className="relative text-center">
-            <div className="text-5xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-2">3 Days</div>
+            <div className="text-5xl font-bold bg-gradient-to-r from-accent to-muted bg-clip-text text-transparent mb-2">3 Days</div>
             <div className="text-sm text-muted-foreground font-medium">Average Prediction Window</div>
             <div className="mt-2 text-xs text-muted-foreground/70">Never run out of essentials</div>
           </div>
@@ -299,7 +271,7 @@ const Features = () => (
         <div className="relative group p-8 rounded-xl bg-card border border-border hover:border-success/30 transition-all overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-success/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
           <div className="relative text-center">
-            <div className="text-5xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-2">$0</div>
+            <div className="text-5xl font-bold bg-gradient-to-r from-accent to-muted bg-clip-text text-transparent mb-2">$0</div>
             <div className="text-sm text-muted-foreground font-medium">Setup Fees</div>
             <div className="mt-2 text-xs text-muted-foreground/70">Start with your existing Visa card</div>
           </div>
