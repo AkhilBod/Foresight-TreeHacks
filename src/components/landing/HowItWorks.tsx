@@ -22,7 +22,7 @@ const steps = [
           <div className="flex items-center gap-3 bg-card/95 backdrop-blur-sm rounded-lg p-3 border border-accent/30">
             <div className="text-left flex-1">
               <div className="text-xs font-semibold text-foreground">Dish Soap</div>
-              <div className="text-xs text-muted-foreground">Green Soap</div>
+              <div className="text-xs text-muted-foreground">Clear</div>
             </div>
             <div className="text-sm font-bold text-accent">Not Low</div>
           </div>
@@ -33,7 +33,7 @@ const steps = [
   { 
     title: "Predictive Analysis", 
     desc: "Machine learning models calculate when you'll run out based on historical usage, predicting 3-5 days before depletion.",
-    example: "Reorder in 8 days",
+    example: "Never Run out ",
     visual: (
       <div className="relative w-full h-64 bg-gradient-to-br from-accent/10 to-accent/5 rounded-lg p-4 border border-accent/20">
         <div className="w-full h-full flex flex-col">
@@ -106,8 +106,8 @@ const steps = [
           </div>
           
           <div className="text-center mt-2">
-            <div className="inline-block px-3 py-1.5 rounded-lg bg-destructive/20 text-destructive text-xs font-semibold border border-destructive/30">
-              Reorder Alert: 3 days
+            <div className="inline-block px-3 py-1.5 rounded-lg bg-destxructive/20 text-destructive text-xs font-semibold border border-destructive/30">
+              Reorder Alert: 8 days
             </div>
           </div>
         </div>
@@ -117,13 +117,13 @@ const steps = [
   { 
     title: "Smart Notification", 
     desc: "You receive a mobile notification with product details, pricing, and the option to approve, modify, or reject the order.",
-    example: "Approve $12.99",
+    example: "One Tap Approve",
     visual: (
       <div className="relative w-full h-48 bg-gradient-to-br from-accent/10 to-muted/5 rounded-lg p-4 flex items-center justify-center border border-accent/20">
         <div className="w-full max-w-[200px] bg-card rounded-xl shadow-xl border border-border p-3">
           <div className="flex items-start gap-2 mb-3">
             <div className="flex-1">
-              <div className="text-xs font-bold text-foreground">Green Soap</div>
+              <div className="text-xs font-bold text-foreground">Hand Soap</div>
               <div className="text-xs text-muted-foreground">Ultra Concentrate</div>
             </div>
           </div>
