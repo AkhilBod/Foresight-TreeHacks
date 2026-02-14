@@ -3,8 +3,9 @@ import { Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   HomeIcon, ActivityIcon, DeviceIcon, SettingsIcon, HelpIcon,
-  CheckIcon, XIcon, UserIcon, ArrowRightIcon, MenuIcon,
+  CheckIcon, XIcon, UserIcon, ArrowRightIcon, MenuIcon, CameraIcon,
 } from "@/components/icons";
+import Camera from "@/components/dashboard/Camera";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -14,6 +15,7 @@ import {
 // --- Sidebar ---
 const sidebarItems = [
   { icon: HomeIcon, label: "Dashboard", path: "/dashboard" },
+  { icon: CameraIcon, label: "Camera", path: "/dashboard/camera" },
   { icon: ActivityIcon, label: "Activity", path: "/dashboard/activity" },
   { icon: DeviceIcon, label: "Devices", path: "/dashboard/devices" },
   { icon: SettingsIcon, label: "Settings", path: "/dashboard/settings" },
@@ -107,6 +109,7 @@ const purchaseItems = [
 
 // --- Main Dashboard ---
 const Dashboard = () => {
+  const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
   const [budget, setBudget] = useState([200]);
   const [autoApprove, setAutoApprove] = useState(true);
@@ -121,6 +124,9 @@ const Dashboard = () => {
     setPurchases((prev) => prev.filter((p) => p.name !== name));
   };
 
+  // Check if we're on the camera page
+  const isCameraPage = location.pathname === "/dashboard/camera";
+
   return (
     <div className="flex h-screen bg-background">
       <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} />
@@ -129,8 +135,12 @@ const Dashboard = () => {
         {/* Header */}
         <header className="flex h-16 items-center justify-between border-b border-border px-6">
           <div>
-            <h1 className="font-display text-xl font-semibold text-foreground">Dashboard</h1>
-            <p className="text-xs text-muted-foreground">Welcome back, Alex</p>
+            <h1 className="font-display text-xl font-semibold text-foreground">
+              {isCameraPage ? "Camera" : "Dashboard"}
+            </h1>
+            <p className="text-xs text-muted-foreground">
+              {isCameraPage ? "AI Vision Detection System" : "Welcome back, Alex"}
+            </p>
           </div>
           <Link
             to="/"
@@ -141,7 +151,12 @@ const Dashboard = () => {
         </header>
 
         <div className="p-6 space-y-6">
-          {/* Top Stats */}
+          {/* Conditionally render Camera or Dashboard content */}
+          {isCameraPage ? (
+            <Camera />
+          ) : (
+            <>
+              {/* Top Stats */}
           <div className="grid gap-4 sm:grid-cols-3">
             {[
               { label: "Monthly Spend", value: "$142.30", sub: "of $200 budget" },
@@ -337,6 +352,8 @@ const Dashboard = () => {
               </div>
             </div>
           </motion.div>
+            </>
+          )}
         </div>
       </div>
     </div>
