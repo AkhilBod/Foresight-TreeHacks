@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -91,13 +91,12 @@ const chartData = [
 ];
 
 // --- Activity items ---
-const activityItems = [
-  { time: "2 min ago", text: "Detected low dish soap in kitchen", status: "pending" },
-  { time: "1 hr ago", text: "Paper towels auto-ordered", status: "approved" },
-  { time: "3 hr ago", text: "Laundry detergent approved", status: "approved" },
-  { time: "5 hr ago", text: "Coffee pods suggestion declined", status: "declined" },
-  { time: "Yesterday", text: "Weekly grocery order completed", status: "approved" },
-];
+interface ActivityItem {
+  time: string;
+  text: string;
+  status: "pending" | "approved" | "declined";
+  timestamp: number;
+}
 
 // --- Purchase items ---
 const purchaseItems = [
@@ -115,13 +114,140 @@ const Dashboard = () => {
   const [autoApprove, setAutoApprove] = useState(true);
   const [autoThreshold, setAutoThreshold] = useState([15]);
   const [purchases, setPurchases] = useState(purchaseItems);
+  const [activityItems, setActivityItems] = useState<ActivityItem[]>([]);
+  const [buyingItem, setBuyingItem] = useState<string | null>(null);
+  const [buyingStage, setBuyingStage] = useState<'amazon' | 'visa' | null>(null);
+
+  // Helper to format relative time
+  const getRelativeTime = (timestamp: number) => {
+    const now = Date.now();
+    const diff = now - timestamp;
+    const minutes = Math.floor(diff / 60000);
+    const hours = Math.floor(diff / 3600000);
+    const days = Math.floor(diff / 86400000);
+    
+    if (minutes < 1) return "Just now";
+    if (minutes < 60) return `${minutes} min ago`;
+    if (hours < 24) return `${hours} hr ago`;
+    if (days === 1) return "Yesterday";
+    return `${days} days ago`;
+  };
+
+  // Track which items we've already added to activity to prevent duplicates
+  const seenItemsRef = useRef<Set<string>>(new Set());
+
+  // Load purchases from localStorage
+  useEffect(() => {
+    const loadPurchases = () => {
+      const stored = localStorage.getItem('pendingPurchases');
+      if (stored) {
+        try {
+          const items = JSON.parse(stored);
+          setPurchases(items);
+          
+          // Add new detections to activity feed (only if not seen before)
+          items.forEach((item: any) => {
+            const itemKey = `${item.name}-${item.status}-${item.timestamp}`;
+            
+            // Only add if we haven't seen this exact detection before
+            if (!seenItemsRef.current.has(itemKey)) {
+              seenItemsRef.current.add(itemKey);
+              
+              setActivityItems(prev => {
+                const newActivity: ActivityItem = {
+                  time: getRelativeTime(item.timestamp),
+                  text: `${item.name} detected - ${item.status}`,
+                  status: "pending",
+                  timestamp: item.timestamp
+                };
+                return [newActivity, ...prev].slice(0, 10); // Keep last 10
+              });
+            }
+          });
+        } catch (e) {
+          console.error('Error loading purchases:', e);
+        }
+      }
+    };
+    
+    loadPurchases();
+    
+    // Poll for updates every second
+    const interval = setInterval(loadPurchases, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Update activity timestamps every minute
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setActivityItems(prev => 
+        prev.map(item => ({
+          ...item,
+          time: getRelativeTime(item.timestamp)
+        }))
+      );
+    }, 60000); // Update every minute
+    return () => clearInterval(interval);
+  }, []);
 
   const handleApprove = (name: string) => {
-    setPurchases((prev) => prev.filter((p) => p.name !== name));
+    // Start buying process
+    setBuyingItem(name);
+    setBuyingStage('amazon');
+    
+    // After 4 seconds, switch to Visa
+    setTimeout(() => {
+      setBuyingStage('visa');
+      
+      // After 3 more seconds, complete the purchase
+      setTimeout(() => {
+        setBuyingItem(null);
+        setBuyingStage(null);
+        
+        // Add to activity
+        setActivityItems(prev => [{
+          time: "Just now",
+          text: `${name} approved`,
+          status: "approved" as const,
+          timestamp: Date.now()
+        }, ...prev].slice(0, 10));
+        
+        setPurchases((prev) => {
+          const updated = prev.filter((p) => p.name !== name);
+          localStorage.setItem('pendingPurchases', JSON.stringify(updated));
+          return updated;
+        });
+      }, 3000);
+    }, 4000);
   };
 
   const handleDecline = (name: string) => {
-    setPurchases((prev) => prev.filter((p) => p.name !== name));
+    // Add to activity
+    setActivityItems(prev => [{
+      time: "Just now",
+      text: `${name} suggestion declined`,
+      status: "declined" as const,
+      timestamp: Date.now()
+    }, ...prev].slice(0, 10));
+    
+    setPurchases((prev) => {
+      const updated = prev.filter((p) => p.name !== name);
+      localStorage.setItem('pendingPurchases', JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const handleApproveAll = () => {
+    // Add to activity
+    setActivityItems(prev => [{
+      time: "Just now",
+      text: `Approved ${purchases.length} items`,
+      status: "approved" as const,
+      timestamp: Date.now()
+    }, ...prev].slice(0, 10));
+    
+    setPurchases([]);
+    localStorage.setItem('pendingPurchases', JSON.stringify([]));
   };
 
   // Check if we're on the camera page
@@ -213,23 +339,27 @@ const Dashboard = () => {
             >
               <h2 className="font-display text-sm font-semibold text-foreground mb-4">Recent Activity</h2>
               <div className="space-y-3">
-                {activityItems.map((item, i) => (
-                  <div key={i} className="flex items-start gap-3">
-                    <div
-                      className={`mt-1 h-2 w-2 shrink-0 rounded-full ${
-                        item.status === "approved"
-                          ? "bg-success"
-                          : item.status === "pending"
-                          ? "bg-primary"
-                          : "bg-destructive"
-                      }`}
-                    />
-                    <div>
-                      <p className="text-sm text-foreground">{item.text}</p>
-                      <p className="text-xs text-muted-foreground">{item.time}</p>
+                {activityItems.length === 0 ? (
+                  <p className="text-sm text-muted-foreground py-4 text-center">No recent activity</p>
+                ) : (
+                  activityItems.map((item, i) => (
+                    <div key={i} className="flex items-start gap-3">
+                      <div
+                        className={`mt-1 h-2 w-2 shrink-0 rounded-full ${
+                          item.status === "approved"
+                            ? "bg-success"
+                            : item.status === "pending"
+                            ? "bg-primary"
+                            : "bg-destructive"
+                        }`}
+                      />
+                      <div>
+                        <p className="text-sm text-foreground">{item.text}</p>
+                        <p className="text-xs text-muted-foreground">{item.time}</p>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </motion.div>
           </div>
@@ -245,7 +375,7 @@ const Dashboard = () => {
               <h2 className="font-display text-sm font-semibold text-foreground">Purchase Approval</h2>
               {purchases.length > 1 && (
                 <button
-                  onClick={() => setPurchases([])}
+                  onClick={handleApproveAll}
                   className="inline-flex items-center gap-1 rounded-md bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary hover:bg-primary/20 transition-colors"
                 >
                   Approve All
@@ -356,6 +486,101 @@ const Dashboard = () => {
           )}
         </div>
       </div>
+
+      {/* Buying Modal */}
+      {buyingItem && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="relative w-full max-w-md rounded-2xl border border-border bg-card p-8 shadow-2xl"
+          >
+            {buyingStage === 'amazon' && (
+              <div className="text-center space-y-6">
+                <div className="flex justify-center">
+                  <svg className="w-24 h-24" viewBox="0 0 200 200" fill="none">
+                    {/* Amazon smile logo */}
+                    <path
+                      d="M120 120C120 120 140 130 160 120C180 110 180 80 160 70C140 60 120 70 120 90V120Z"
+                      fill="#FF9900"
+                    />
+                    <path
+                      d="M80 120C80 120 60 130 40 120C20 110 20 80 40 70C60 60 80 70 80 90V120Z"
+                      fill="#FF9900"
+                    />
+                    <path
+                      d="M40 140C40 140 80 155 100 155C120 155 160 140 160 140"
+                      stroke="#FF9900"
+                      strokeWidth="8"
+                      strokeLinecap="round"
+                    />
+                    <path
+                      d="M30 150L170 150"
+                      stroke="#232F3E"
+                      strokeWidth="6"
+                      strokeLinecap="round"
+                    />
+                    <path
+                      d="M160 145L175 155L160 165"
+                      stroke="#232F3E"
+                      strokeWidth="6"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      fill="none"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-xl font-display font-bold text-foreground mb-2">
+                    Purchasing via Amazon
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    Our AI agent is placing your order for {buyingItem}
+                  </p>
+                </div>
+                <div className="flex justify-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '0ms' }} />
+                  <div className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '150ms' }} />
+                  <div className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '300ms' }} />
+                </div>
+              </div>
+            )}
+            
+            {buyingStage === 'visa' && (
+              <div className="text-center space-y-6">
+                <div className="flex justify-center">
+                  <svg className="w-24 h-16" viewBox="0 0 200 130" fill="none">
+                    {/* Visa logo */}
+                    <rect width="200" height="130" rx="12" fill="#1A1F71"/>
+                    <text x="100" y="80" fontSize="48" fontWeight="bold" fill="white" textAnchor="middle" fontFamily="Arial, sans-serif">
+                      VISA
+                    </text>
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-xl font-display font-bold text-foreground mb-2">
+                    Securing Transaction
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    Verifying payment with Visa Secure
+                  </p>
+                </div>
+                <div className="flex justify-center">
+                  <div className="relative w-12 h-12">
+                    <div className="absolute inset-0 border-4 border-success/30 rounded-full" />
+                    <div className="absolute inset-0 border-4 border-success border-t-transparent rounded-full animate-spin" />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <svg className="w-6 h-6 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 };

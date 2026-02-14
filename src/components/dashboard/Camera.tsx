@@ -5,6 +5,8 @@ interface DetectedItem {
   name: string;
   status: string;
   timestamp: string;
+  price?: number;
+  brand?: string;
 }
 
 interface Activity {
@@ -47,7 +49,7 @@ const Camera = () => {
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [autoAnalyze, setAutoAnalyze] = useState(true);
 
-  const GEMINI_API_KEY = "AIzaSyCH2Vk-MY551p7-3Or0mSJhA-kyAWKdXwk";
+  const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || "AIzaSyDx7tKOatmVDFJrn-mDwpFrbbzB0RBV1ps";
 
   useEffect(() => {
     return () => {
@@ -142,9 +144,9 @@ const Camera = () => {
 
   const analyzeImageWithGemini = async (base64Image: string) => {
     try {
-      // Call Gemini API - using Gemini 1.5 Flash (better paid tier support)
+      // Call Gemini API - using Gemini 2.0 Flash Lite (experimental, fastest)
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${GEMINI_API_KEY}`,
         {
           method: "POST",
           headers: {
@@ -155,82 +157,75 @@ const Camera = () => {
               {
                 parts: [
                   {
-                    text: `You are a smart shopping assistant AI for Visa Smart Home Commerce. Analyze images and recommend products that could be useful based on what you see.
+                    text: `You are a proactive shopping assistant AI for Visa Smart Home Commerce. Analyze images and recommend 1-2 products with prices.
 
-YOUR TASK: Look at this image and recommend products that might be needed, running low, or would be useful in this context.
+YOUR TASK: Analyze this image and recommend EXACTLY 1-2 products (never more) that could be useful, needed, or would enhance the space.
 
-STATUS DEFINITIONS:
-- "Low" = Item is visible but running low (container less than 25% full)
-- "Empty" = Container is visible but completely depleted
-- "Missing" = Item would be useful here but is not visible
-- "Recommended" = Item would enhance this space/activity
+CRITICAL RULES:
+- ALWAYS return 1-2 items (never 0, never more than 2)
+- ALWAYS include realistic prices
+- ALWAYS include a common brand name
+- Focus on the MOST important/useful items only
 
-BE FLEXIBLE AND SMART:
-1. Identify the scene/context (bathroom, kitchen, bedroom, living room, closet, pantry, etc.)
-2. Look for items that are low, empty, or missing
-3. Recommend products that would be useful based on the visible context
-4. Think broadly - household items, food, snacks, drinks, clothes, accessories, etc.
-5. Be practical and helpful, not overly aggressive
+RESPONSE FORMAT - Return JSON array with: name, brand, price, status
 
-WHAT TO DETECT:
+STATUS OPTIONS:
+- "Low" = Item visible but running low
+- "Empty" = Container visible but depleted  
+- "Missing" = Item not visible but would be useful
+- "Recommended" = Item would be helpful to have
 
-BATHROOMS:
-- Essentials: Toilet Paper, Hand Soap, Shampoo, Conditioner, Body Wash, Toothpaste
-- Nice-to-haves: Tissues, Lotion, Air Freshener, Cleaning Supplies, Cotton Swabs
-- Empty/low containers, missing items
+SCENES & PRIORITIES:
+
+BATHROOM:
+Priority 1: Toilet Paper, Hand Soap, Shampoo
+Priority 2: Body Wash, Toothpaste, Bathroom Cleaner
+Prices: $3-15
 
 KITCHEN:
-- Essentials: Dish Soap, Sponges, Paper Towels, Trash Bags
-- Food/Drinks: Coffee, Tea, Cooking Oil, Salt, Pepper, Spices
-- Snacks: Chips, Cookies, Granola Bars (if pantry/counter visible)
-- Fresh items: Milk, Eggs, Bread (if fridge/counter visible and empty spots)
-- Empty containers, low supplies, bare shelves
+Priority 1: Dish Soap, Paper Towels, Sponges
+Priority 2: Coffee, Cooking Oil, Trash Bags
+Prices: $3-20
 
-BEDROOM/CLOSET:
-- Laundry: Detergent, Fabric Softener, Dryer Sheets, Stain Remover
-- Clothing: If hangers are empty or closet sparse, suggest basics (t-shirts, socks, etc.)
-- Bedding: If bed visible, note if sheets/pillows look worn
+BEDROOM/LAUNDRY:
+Priority 1: Laundry Detergent, Fabric Softener
+Priority 2: Dryer Sheets, Air Freshener
+Prices: $5-25
 
-LIVING ROOM/OFFICE:
-- Supplies: Batteries, Light Bulbs, Tissues, Cleaning Wipes
-- Snacks: If coffee table/desk visible, suggest snacks or drinks
-- Organization: Storage bins if clutter visible
+OFFICE/DESK:
+Priority 1: Coffee, Snacks, Pens
+Priority 2: Sticky Notes, Water, Organizers
+Prices: $3-15
 
 PANTRY/FRIDGE:
-- Look for empty shelves or sparse areas
-- Recommend staples: Pasta, Rice, Canned Goods, Snacks, Drinks
-- Note visibly empty containers or low stock
+Priority 1: Milk, Eggs, Bread, Pasta
+Priority 2: Snacks, Canned Goods, Rice
+Prices: $2-20
 
-ANY SCENE:
-- Be observant and creative
-- If you see clutter → recommend storage/organization
-- If you see empty spaces → recommend what typically goes there
-- If items look worn/old → recommend replacements
-- Consider user convenience and lifestyle
+STRATEGY:
+- Pick the 1-2 MOST important items for the visible scene
+- If multiple options, choose the most commonly needed
+- Estimate realistic retail prices
+- Use popular brands (Dawn, Bounty, Tide, Charmin, etc.)
 
-DETECTION EXAMPLES:
-✓ Empty toilet paper holder → "Toilet Paper" status: "Empty"
-✓ Sparse pantry shelf → "Pasta" status: "Missing", "Canned Soup" status: "Missing"
-✓ Nearly empty shampoo bottle → "Shampoo" status: "Low"
-✓ Empty fruit bowl on counter → "Fresh Fruit" status: "Recommended"
-✓ Coffee maker with no coffee → "Coffee" status: "Missing"
-✓ Messy desk → "Desk Organizer" status: "Recommended"
-✓ Empty snack drawer → "Granola Bars" status: "Missing", "Chips" status: "Missing"
-✓ Low laundry detergent → "Laundry Detergent" status: "Low"
-✓ Sparse closet → "T-Shirts" status: "Recommended"
+REQUIRED FORMAT (1-2 items only):
+[
+  {"name":"Item Name","brand":"Brand Name","price":9.99,"status":"Missing"},
+  {"name":"Another Item","brand":"Brand","price":12.49,"status":"Low"}
+]
 
-Return ONLY a JSON array with name and status. Be helpful but reasonable (3-8 items typically):
+EXAMPLES:
 
-Examples:
-Bathroom with empty soap: [{"name":"Hand Soap","status":"Empty"},{"name":"Toilet Paper","status":"Low"}]
-Sparse pantry: [{"name":"Pasta","status":"Missing"},{"name":"Canned Soup","status":"Missing"},{"name":"Rice","status":"Missing"},{"name":"Snacks","status":"Recommended"}]
-Kitchen counter: [{"name":"Paper Towels","status":"Empty"},{"name":"Dish Soap","status":"Low"},{"name":"Coffee","status":"Missing"}]
-Empty fridge shelf: [{"name":"Milk","status":"Missing"},{"name":"Eggs","status":"Missing"},{"name":"Fresh Vegetables","status":"Recommended"}]
-Bedroom with laundry: [{"name":"Laundry Detergent","status":"Low"},{"name":"Dryer Sheets","status":"Missing"}]
-Office desk: [{"name":"Pens","status":"Low"},{"name":"Sticky Notes","status":"Missing"},{"name":"Desk Organizer","status":"Recommended"}]
-Well-stocked area: []
+Bathroom scene:
+[{"name":"Toilet Paper","brand":"Charmin Ultra","price":8.99,"status":"Missing"},{"name":"Hand Soap","brand":"Softsoap","price":3.49,"status":"Recommended"}]
 
-IMPORTANT: Be practical and helpful. Focus on what would genuinely be useful. Don't over-recommend.`,
+Kitchen sink:
+[{"name":"Dish Soap","brand":"Dawn Ultra","price":4.99,"status":"Low"},{"name":"Sponges","brand":"Scotch-Brite","price":5.99,"status":"Missing"}]
+
+Office desk:
+[{"name":"Coffee","brand":"Folgers","price":12.99,"status":"Missing"},{"name":"Pens","brand":"Bic","price":4.49,"status":"Low"}]
+
+Remember: EXACTLY 1-2 items, always include brand and price, focus on highest priority items!`,
                   },
                   {
                     inline_data: {
@@ -277,7 +272,9 @@ IMPORTANT: Be practical and helpful. Focus on what would genuinely be useful. Do
           const confirmedItems: DetectedItem[] = items.map((item: any) => ({
             name: item.name,
             status: item.status,
-            timestamp
+            timestamp,
+            price: item.price || 0,
+            brand: item.brand || "Generic"
           }));
           
           // Update history for status tracking (used to smooth transitions)
@@ -325,6 +322,19 @@ IMPORTANT: Be practical and helpful. Focus on what would genuinely be useful. Do
           if (hasChanged) {
             setDetectedItems(confirmedItems);
             
+            // Save to localStorage for Dashboard access
+            const existingPurchases = JSON.parse(localStorage.getItem('pendingPurchases') || '[]');
+            const newPurchases = confirmedItems.filter(item => {
+              return !existingPurchases.some((p: any) => p.name === item.name);
+            }).map(item => ({
+              ...item,
+              confidence: 85 // Default confidence
+            }));
+            
+            if (newPurchases.length > 0) {
+              localStorage.setItem('pendingPurchases', JSON.stringify([...newPurchases, ...existingPurchases]));
+            }
+            
             // Add to recent activities only for newly confirmed items
             if (confirmedItems.length > 0) {
               const newlyConfirmed = confirmedItems.filter(item => {
@@ -335,7 +345,7 @@ IMPORTANT: Be practical and helpful. Focus on what would genuinely be useful. Do
               if (newlyConfirmed.length > 0) {
                 console.log("Adding to activities:", newlyConfirmed.length, "newly confirmed items");
                 const newActivities = newlyConfirmed.map((item: DetectedItem) => ({
-                  message: `${item.name} needs refilling (${item.status})`,
+                  message: `${item.name} detected - ${item.status}`,
                   time: "Just now",
                 }));
                 
@@ -536,35 +546,43 @@ IMPORTANT: Be practical and helpful. Focus on what would genuinely be useful. Do
             className="bg-card border border-border rounded-xl p-6"
           >
             <h3 className="text-lg font-display font-bold text-foreground mb-4">
-              Items Needing Replenishment
+              Detected Items
             </h3>
             <p className="text-xs text-muted-foreground mb-4">
-              Detected household essentials running low or depleted
+              AI-detected items sent to Dashboard for review
             </p>
             <div className="space-y-3">
               {detectedItems.map((item, index) => (
                 <motion.div
-                  key={index}
+                  key={`${item.name}-${index}`}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.1 }}
-                  className="flex items-center justify-between p-3 bg-surface rounded-lg border border-border"
+                  className="flex items-center justify-between p-4 bg-surface rounded-lg border border-border"
                 >
-                  <div>
+                  <div className="flex-1">
                     <p className="font-semibold text-foreground">{item.name}</p>
-                    <p className="text-xs text-muted-foreground">{item.timestamp}</p>
+                    <p className="text-sm text-muted-foreground">{item.brand}</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <p className="text-sm font-bold text-primary">${item.price?.toFixed(2)}</p>
+                      <span
+                        className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
+                          item.status.toLowerCase() === "low"
+                            ? "bg-yellow-500/20 text-yellow-500"
+                            : item.status.toLowerCase() === "empty"
+                            ? "bg-red-500/20 text-red-500"
+                            : item.status.toLowerCase() === "missing"
+                            ? "bg-orange-500/20 text-orange-500"
+                            : "bg-blue-500/20 text-blue-500"
+                        }`}
+                      >
+                        {item.status}
+                      </span>
+                    </div>
                   </div>
-                  <span
-                    className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                      item.status.toLowerCase() === "low"
-                        ? "bg-yellow-500/20 text-yellow-500 border border-yellow-500/30"
-                        : item.status.toLowerCase() === "empty"
-                        ? "bg-red-500/20 text-red-500 border border-red-500/30"
-                        : "bg-green-500/20 text-green-500 border border-green-500/30"
-                    }`}
-                  >
-                    {item.status}
-                  </span>
+                  <div className="ml-4 text-xs text-muted-foreground">
+                    → Dashboard
+                  </div>
                 </motion.div>
               ))}
             </div>
