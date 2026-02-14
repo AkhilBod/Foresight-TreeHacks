@@ -274,62 +274,6 @@ const HowItWorks = () => (
           </motion.div>
         ))}
       </div>
-
-      {/* Use Case Example */}
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.6, delay: 0.2 }}
-        className="mt-24 p-8 md:p-12 rounded-2xl bg-gradient-to-br from-accent/10 via-card to-muted/10 border border-accent/30 relative overflow-hidden"
-      >
-        <div className="absolute top-0 right-0 w-64 h-64 bg-accent/10 rounded-full blur-3xl"></div>
-        <div className="relative max-w-3xl mx-auto text-center">
-          <h3 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-6">Real-World Example</h3>
-          <div className="space-y-4 text-left">
-            <div className="flex items-start gap-4">
-              <div className="shrink-0 w-10 h-10 rounded-lg bg-accent/20 flex items-center justify-center border border-accent/30">
-                <span className="text-sm font-bold text-accent">Mon</span>
-              </div>
-              <div className="flex-1">
-                <p className="text-muted-foreground leading-relaxed">
-                  You're washing dishes and the camera notices you're not using dish soap.
-                </p>
-              </div>
-            </div>
-            <div className="flex items-start gap-4">
-              <div className="shrink-0 w-10 h-10 rounded-lg bg-accent/20 flex items-center justify-center border border-accent/30">
-                <span className="text-sm font-bold text-accent">Tue</span>
-              </div>
-              <div className="flex-1">
-                <p className="text-muted-foreground leading-relaxed">
-                  The AI confirms the pattern and predicts you'll run out by Thursday.
-                </p>
-              </div>
-            </div>
-            <div className="flex items-start gap-4">
-              <div className="shrink-0 w-10 h-10 rounded-lg bg-accent/20 flex items-center justify-center border border-accent/30">
-                <span className="text-sm font-bold text-accent">Wed</span>
-              </div>
-              <div className="flex-1">
-                <p className="text-muted-foreground leading-relaxed">
-                  You get a notification to approve reordering your preferred brand.
-                </p>
-              </div>
-            </div>
-            <div className="flex items-start gap-4">
-              <div className="shrink-0 w-10 h-10 rounded-lg bg-success/20 flex items-center justify-center border border-success/30">
-                <span className="text-sm font-bold text-success">Thu</span>
-              </div>
-              <div className="flex-1">
-                <p className="text-muted-foreground leading-relaxed">
-                  <span className="text-accent font-semibold">New dish soap arrives at your door</span> via Visa secure payment—before you even notice you ran out.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </motion.div>
     </div>
   </section>
 );

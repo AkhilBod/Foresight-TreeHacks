@@ -20,7 +20,7 @@ const HeroDashboardMockup = () => (
       {/* Dashboard Image */}
       <div className="w-full">
         <img 
-          src="https://i.ibb.co/b5mxHc19/image.png" 
+          src="https://i.ibb.co/4gPY40hH/image.png" 
           alt="Foresight Dashboard" 
           className="w-full h-auto"
         />
