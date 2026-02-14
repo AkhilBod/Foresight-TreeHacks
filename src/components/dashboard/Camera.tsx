@@ -39,6 +39,7 @@ const Camera = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const analysisIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const itemHistoryRef = useRef<Map<string, { status: string; count: number; lastSeen: number }>>(new Map());
   const [isActive, setIsActive] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [detectedItems, setDetectedItems] = useState<DetectedItem[]>([]);
@@ -46,7 +47,7 @@ const Camera = () => {
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [autoAnalyze, setAutoAnalyze] = useState(true);
 
-  const GEMINI_API_KEY = "REMOVED_API_KEY";
+  const GEMINI_API_KEY = "AIzaSyCH2Vk-MY551p7-3Or0mSJhA-kyAWKdXwk";
 
   useEffect(() => {
     return () => {
@@ -60,7 +61,7 @@ const Camera = () => {
   // Auto-analysis effect for live camera feed
   useEffect(() => {
     if (isActive && autoAnalyze && !uploadedImage) {
-      // Start analyzing every 5 seconds
+      // Start analyzing every 5 seconds (respects rate limits)
       analysisIntervalRef.current = setInterval(() => {
         captureAndAnalyze();
       }, 5000);
@@ -109,11 +110,18 @@ const Camera = () => {
     }
     setIsActive(false);
     setUploadedImage(null);
+    // Clear history when stopping camera
+    itemHistoryRef.current.clear();
+    setDetectedItems([]);
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    // Clear history when uploading new image
+    itemHistoryRef.current.clear();
+    setDetectedItems([]);
 
     // Stop camera if active
     if (videoRef.current?.srcObject) {
@@ -134,9 +142,9 @@ const Camera = () => {
 
   const analyzeImageWithGemini = async (base64Image: string) => {
     try {
-      // Call Gemini API - using Gemini 2.0 Flash
+      // Call Gemini API - using Gemini 1.5 Flash (better paid tier support)
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,
         {
           method: "POST",
           headers: {
@@ -147,74 +155,82 @@ const Camera = () => {
               {
                 parts: [
                   {
-                    text: `You are a household item depletion detection AI for Visa Smart Home Commerce.
+                    text: `You are a smart shopping assistant AI for Visa Smart Home Commerce. Analyze images and recommend products that could be useful based on what you see.
 
-YOUR TASK: Analyze this image and identify items that are LOW, EMPTY, or MISSING from their expected location.
+YOUR TASK: Look at this image and recommend products that might be needed, running low, or would be useful in this context.
 
 STATUS DEFINITIONS:
-- "Low" = Item is visible but container is less than 25% full
-- "Empty" = Item/container is visible but completely depleted (e.g., empty bottle visible)
-- "Missing" = Item should be present in this location but is not visible at all
+- "Low" = Item is visible but running low (container less than 25% full)
+- "Empty" = Container is visible but completely depleted
+- "Missing" = Item would be useful here but is not visible
+- "Recommended" = Item would enhance this space/activity
 
-CRITICAL RULES:
-1. Identify what area/fixture is visible (toilet, sink, shower, counter, etc.)
-2. For THAT specific area, check if expected items are present and stocked
-3. Use "Missing" when item should be there but isn't visible
-4. Use "Empty" when container/holder is visible but depleted
-5. Use "Low" when visible container is less than 25% full
-6. ONLY check for items relevant to the visible fixture/area
+BE FLEXIBLE AND SMART:
+1. Identify the scene/context (bathroom, kitchen, bedroom, living room, closet, pantry, etc.)
+2. Look for items that are low, empty, or missing
+3. Recommend products that would be useful based on the visible context
+4. Think broadly - household items, food, snacks, drinks, clothes, accessories, etc.
+5. Be practical and helpful, not overly aggressive
 
-CONTEXT-BASED DETECTION:
+WHAT TO DETECT:
 
-TOILET VISIBLE:
-- Check for: Toilet Paper (on holder or nearby shelf)
-- If toilet paper holder visible but no roll → "Toilet Paper" status: "Empty"
-- If no toilet paper holder or paper visible where it should be → "Toilet Paper" status: "Missing"
-- Optionally check: Bathroom Cleaner (if storage area visible)
+BATHROOMS:
+- Essentials: Toilet Paper, Hand Soap, Shampoo, Conditioner, Body Wash, Toothpaste
+- Nice-to-haves: Tissues, Lotion, Air Freshener, Cleaning Supplies, Cotton Swabs
+- Empty/low containers, missing items
 
-BATHROOM SINK VISIBLE:
-- Check for: Hand Soap (dispenser or bottle at/near sink)
-- If empty soap dispenser visible → "Hand Soap" status: "Empty"
-- If no soap visible where it should be → "Hand Soap" status: "Missing"
-- If soap bottle less than 25% full → "Hand Soap" status: "Low"
+KITCHEN:
+- Essentials: Dish Soap, Sponges, Paper Towels, Trash Bags
+- Food/Drinks: Coffee, Tea, Cooking Oil, Salt, Pepper, Spices
+- Snacks: Chips, Cookies, Granola Bars (if pantry/counter visible)
+- Fresh items: Milk, Eggs, Bread (if fridge/counter visible and empty spots)
+- Empty containers, low supplies, bare shelves
 
-KITCHEN SINK VISIBLE:
-- Check for: Dish Soap (at/near sink), Hand Soap (if sink area)
-- If empty bottle visible → status: "Empty"
-- If no dish soap visible → status: "Missing"
-- If bottle nearly empty → status: "Low"
-- Check for: Sponges (at sink area)
+BEDROOM/CLOSET:
+- Laundry: Detergent, Fabric Softener, Dryer Sheets, Stain Remover
+- Clothing: If hangers are empty or closet sparse, suggest basics (t-shirts, socks, etc.)
+- Bedding: If bed visible, note if sheets/pillows look worn
 
-SHOWER/TUB VISIBLE:
-- Check for: Shampoo, Conditioner, Body Wash (on caddy/shelf/ledge)
-- If empty bottle visible in shower → status: "Empty"
-- If no bottles in shower where they should be → status: "Missing"
-- If bottle nearly empty → status: "Low"
+LIVING ROOM/OFFICE:
+- Supplies: Batteries, Light Bulbs, Tissues, Cleaning Wipes
+- Snacks: If coffee table/desk visible, suggest snacks or drinks
+- Organization: Storage bins if clutter visible
 
-KITCHEN COUNTER VISIBLE:
-- Check for: Paper Towels (on holder), Cooking Oil (near stove)
-- If paper towel holder empty → "Paper Towels" status: "Empty"
-- If no paper towel holder or towels visible → "Paper Towels" status: "Missing"
+PANTRY/FRIDGE:
+- Look for empty shelves or sparse areas
+- Recommend staples: Pasta, Rice, Canned Goods, Snacks, Drinks
+- Note visibly empty containers or low stock
 
-DETECTION GUIDELINES:
-✓ Toilet with no paper on visible holder → "Toilet Paper" Empty
-✓ Toilet area with no holder or paper anywhere → "Toilet Paper" Missing
-✓ Sink with empty soap dispenser → "Hand Soap" Empty
-✓ Sink with no soap anywhere → "Hand Soap" Missing
-✓ Visible bottle less than 25% full → Item "Low"
-✓ Empty bottle/container still present → Item "Empty"
+ANY SCENE:
+- Be observant and creative
+- If you see clutter → recommend storage/organization
+- If you see empty spaces → recommend what typically goes there
+- If items look worn/old → recommend replacements
+- Consider user convenience and lifestyle
 
-Return ONLY a JSON array with name and status. Examples:
-Toilet with empty holder: [{"name":"Toilet Paper","status":"Empty"}]
-Toilet with no toilet paper visible: [{"name":"Toilet Paper","status":"Missing"}]
-Bathroom sink with empty soap dispenser: [{"name":"Hand Soap","status":"Empty"}]
-Bathroom sink with no soap: [{"name":"Hand Soap","status":"Missing"}]
-Kitchen sink with low dish soap: [{"name":"Dish Soap","status":"Low"}]
-Shower with empty shampoo bottle visible: [{"name":"Shampoo","status":"Empty"}]
-Shower with no products visible: [{"name":"Shampoo","status":"Missing"},{"name":"Body Wash","status":"Missing"}]
-All items present and stocked: []
+DETECTION EXAMPLES:
+✓ Empty toilet paper holder → "Toilet Paper" status: "Empty"
+✓ Sparse pantry shelf → "Pasta" status: "Missing", "Canned Soup" status: "Missing"
+✓ Nearly empty shampoo bottle → "Shampoo" status: "Low"
+✓ Empty fruit bowl on counter → "Fresh Fruit" status: "Recommended"
+✓ Coffee maker with no coffee → "Coffee" status: "Missing"
+✓ Messy desk → "Desk Organizer" status: "Recommended"
+✓ Empty snack drawer → "Granola Bars" status: "Missing", "Chips" status: "Missing"
+✓ Low laundry detergent → "Laundry Detergent" status: "Low"
+✓ Sparse closet → "T-Shirts" status: "Recommended"
 
-IMPORTANT: Be precise with status. "Empty" means the container is there but depleted. "Missing" means the item isn't there at all. "Low" means running low but not empty.`,
+Return ONLY a JSON array with name and status. Be helpful but reasonable (3-8 items typically):
+
+Examples:
+Bathroom with empty soap: [{"name":"Hand Soap","status":"Empty"},{"name":"Toilet Paper","status":"Low"}]
+Sparse pantry: [{"name":"Pasta","status":"Missing"},{"name":"Canned Soup","status":"Missing"},{"name":"Rice","status":"Missing"},{"name":"Snacks","status":"Recommended"}]
+Kitchen counter: [{"name":"Paper Towels","status":"Empty"},{"name":"Dish Soap","status":"Low"},{"name":"Coffee","status":"Missing"}]
+Empty fridge shelf: [{"name":"Milk","status":"Missing"},{"name":"Eggs","status":"Missing"},{"name":"Fresh Vegetables","status":"Recommended"}]
+Bedroom with laundry: [{"name":"Laundry Detergent","status":"Low"},{"name":"Dryer Sheets","status":"Missing"}]
+Office desk: [{"name":"Pens","status":"Low"},{"name":"Sticky Notes","status":"Missing"},{"name":"Desk Organizer","status":"Recommended"}]
+Well-stocked area: []
+
+IMPORTANT: Be practical and helpful. Focus on what would genuinely be useful. Don't over-recommend.`,
                   },
                   {
                     inline_data: {
@@ -232,6 +248,15 @@ IMPORTANT: Be precise with status. "Empty" means the container is there but depl
       const data = await response.json();
       console.log("Gemini API response:", JSON.stringify(data, null, 2));
       
+      // Handle rate limit errors
+      if (data.error) {
+        if (data.error.code === 429) {
+          console.warn("Rate limit exceeded, skipping this analysis cycle");
+          return; // Skip this cycle silently
+        }
+        throw new Error(data.error.message || "API error");
+      }
+      
       if (data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
         const text = data.candidates[0].content.parts[0].text;
         console.log("Gemini response text:", text);
@@ -242,33 +267,88 @@ IMPORTANT: Be precise with status. "Empty" means the container is there but depl
           console.log("Extracted JSON:", jsonMatch[0]);
           const items = JSON.parse(jsonMatch[0]);
           console.log("Parsed items:", items);
+          
+          // Process items with status tracking to reduce flickering
+          const currentTimestamp = Date.now();
+          const history = itemHistoryRef.current;
           const timestamp = new Date().toLocaleTimeString();
           
-          const formattedItems = items.map((item: any) => ({
+          // Build confirmed items list from current detection
+          const confirmedItems: DetectedItem[] = items.map((item: any) => ({
             name: item.name,
             status: item.status,
-            timestamp,
+            timestamp
           }));
           
-          console.log("Formatted items:", formattedItems);
-          setDetectedItems(formattedItems);
-          
-          // Add to recent activities - all detected items should be low/empty based on our prompt
-          if (formattedItems.length > 0) {
-            console.log("Adding to activities:", formattedItems.length, "items");
-            const newActivities = formattedItems.map((item: DetectedItem) => ({
-              message: `${item.name} needs refilling (${item.status})`,
-              time: "Just now",
-            }));
+          // Update history for status tracking (used to smooth transitions)
+          confirmedItems.forEach((item) => {
+            const key = item.name;
+            const existing = history.get(key);
             
-            setRecentActivities(prev => [...newActivities, ...prev].slice(0, 15));
-          } else {
-            // No items need restocking
-            const noItemsActivity = {
-              message: "All household items adequately stocked",
-              time: "Just now",
-            };
-            setRecentActivities(prev => [noItemsActivity, ...prev].slice(0, 15));
+            if (existing && existing.status === item.status) {
+              // Same status detected again, increment count
+              history.set(key, {
+                status: item.status,
+                count: existing.count + 1,
+                lastSeen: currentTimestamp
+              });
+            } else {
+              // New item or status changed
+              history.set(key, {
+                status: item.status,
+                count: 1,
+                lastSeen: currentTimestamp
+              });
+            }
+          });
+          
+          // Clean up old items (not seen in last 30 seconds)
+          const itemsToDelete: string[] = [];
+          history.forEach((value, key) => {
+            const stillDetected = confirmedItems.find(item => item.name === key);
+            if (!stillDetected && currentTimestamp - value.lastSeen > 30000) {
+              itemsToDelete.push(key);
+            }
+          });
+          itemsToDelete.forEach(key => history.delete(key));
+          
+          console.log("Detected items:", confirmedItems);
+          
+          // Only update if there's a meaningful change
+          const hasChanged = 
+            confirmedItems.length !== detectedItems.length ||
+            confirmedItems.some(item => {
+              const existing = detectedItems.find(d => d.name === item.name);
+              return !existing || existing.status !== item.status;
+            });
+          
+          if (hasChanged) {
+            setDetectedItems(confirmedItems);
+            
+            // Add to recent activities only for newly confirmed items
+            if (confirmedItems.length > 0) {
+              const newlyConfirmed = confirmedItems.filter(item => {
+                const wasConfirmed = detectedItems.find(d => d.name === item.name && d.status === item.status);
+                return !wasConfirmed;
+              });
+              
+              if (newlyConfirmed.length > 0) {
+                console.log("Adding to activities:", newlyConfirmed.length, "newly confirmed items");
+                const newActivities = newlyConfirmed.map((item: DetectedItem) => ({
+                  message: `${item.name} needs refilling (${item.status})`,
+                  time: "Just now",
+                }));
+                
+                setRecentActivities(prev => [...newActivities, ...prev].slice(0, 15));
+              }
+            } else if (detectedItems.length > 0) {
+              // All items cleared
+              const noItemsActivity = {
+                message: "All household items adequately stocked",
+                time: "Just now",
+              };
+              setRecentActivities(prev => [noItemsActivity, ...prev].slice(0, 15));
+            }
           }
         }
       }
@@ -427,19 +507,10 @@ IMPORTANT: Be precise with status. "Empty" means the container is there but depl
             {(isActive || uploadedImage) && (
               <div className="absolute top-4 left-4">
                 <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent/90 backdrop-blur-sm border border-accent/30">
-                  <div className="w-2 h-2 rounded-full bg-white animate-pulse"></div>
+                  <div className={`w-2 h-2 rounded-full bg-white ${isAnalyzing ? 'animate-pulse' : ''}`}></div>
                   <span className="text-xs font-semibold text-white">
-                    {uploadedImage ? "Image Loaded" : autoAnalyze ? "Auto-Analyzing" : "Vision Active"}
+                    {uploadedImage ? "Image Loaded" : isAnalyzing ? "Analyzing..." : autoAnalyze ? "Auto-Detection Active" : "Vision Active"}
                   </span>
-                </div>
-              </div>
-            )}
-            {isAnalyzing && (
-              <div className="absolute inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center">
-                <div className="text-center">
-                  <div className="w-16 h-16 border-4 border-accent border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                  <p className="text-white font-semibold">Detecting depletion patterns...</p>
-                  <p className="text-white/70 text-sm mt-2">Powered by Gemini 2.0</p>
                 </div>
               </div>
             )}
