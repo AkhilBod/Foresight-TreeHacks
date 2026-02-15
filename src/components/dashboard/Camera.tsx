@@ -30,7 +30,7 @@ const Camera = () => {
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [autoAnalyze, setAutoAnalyze] = useState(true);
 
-  const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || "AIzaSyDx7tKOatmVDFJrn-mDwpFrbbzB0RBV1ps";
+  const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY;
 
   useEffect(() => {
     return () => {
@@ -123,119 +123,141 @@ const Camera = () => {
     reader.readAsDataURL(file);
   };
 
-  const analyzeImageWithGemini = async (base64Image: string) => {
+  const analyzeImageWithOpenAI = async (base64Image: string) => {
     try {
-      // Call Gemini API - using Gemini 2.0 Flash Lite (experimental, fastest)
+      // Call OpenAI API - using GPT-4 Vision
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${GEMINI_API_KEY}`,
+        "https://api.openai.com/v1/chat/completions",
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            "Authorization": `Bearer ${OPENAI_API_KEY}`,
           },
           body: JSON.stringify({
-            contents: [
+            model: "gpt-4o-mini",
+            messages: [
               {
-                parts: [
+                role: "user",
+                content: [
                   {
-                    text: `You are a proactive shopping assistant AI for Visa Smart Home Commerce. Analyze images and recommend 1-2 products with prices.
+                    type: "text",
+                    text: `You are a strict household inventory detection AI for Visa Smart Home Commerce. ONLY detect items that are actually visible and clearly need restocking.
 
-YOUR TASK: Analyze this image and recommend EXACTLY 1-2 products (never more) that could be useful, needed, or would enhance the space.
+YOUR TASK: Analyze this image and ONLY recommend products if you can SEE clear evidence they are needed.
 
-CRITICAL RULES:
-- ALWAYS return 1-2 items (never 0, never more than 2)
-- ALWAYS include realistic prices
-- ALWAYS include a common brand name
-- Focus on the MOST important/useful items only
+CRITICAL RULES - BE STRICT:
+- ONLY recommend items if you can ACTUALLY SEE them in the image
+- If you see a printer/office area, ONLY recommend supplies if visibly low/empty
+- If you see a kitchen/sink, ONLY recommend supplies if they're visibly low/empty
+- Return EMPTY ARRAY [] if nothing clearly needs restocking
+- Maximum 1-2 items per analysis (prioritize most urgent)
+- Do NOT make random suggestions for items not visible
+- Do NOT assume items are needed without visual evidence
 
 RESPONSE FORMAT - Return JSON array with: name, brand, price, status
 
-STATUS OPTIONS:
-- "Low" = Item visible but running low
-- "Empty" = Container visible but depleted  
-- "Missing" = Item not visible but would be useful
-- "Recommended" = Item would be helpful to have
+STATUS OPTIONS (use ONLY what you can SEE):
+- "Low" = Item is visible in image and clearly running low
+- "Empty" = Container/dispenser visible but empty
+- "Missing" = Expected item for visible fixture/area but completely absent
+- Do NOT use "Recommended" - only suggest what's actually needed
 
-SCENES & PRIORITIES:
+STRICT DETECTION RULES FOR DEMO ENVIRONMENTS:
 
-BATHROOM:
-Priority 1: Toilet Paper, Hand Soap, Shampoo
-Priority 2: Body Wash, Toothpaste, Bathroom Cleaner
-Prices: $3-15
+IF YOU SEE A PRINTER/OFFICE/COPY ROOM:
+- Check: Is printer paper visibly low in the tray or on shelves?
+- Check: Are printer ink/toner cartridges visible and appear empty/low?
+- Check: Are pens/markers/pencils scattered or missing from holders?
+- Check: Are sticky notes pads visibly depleted?
+- Check: Are paper clips, staples, or office supplies visibly low?
+- Check: Is coffee/snacks area visible with empty containers?
+- If everything looks stocked and organized, return []
 
-KITCHEN:
-Priority 1: Dish Soap, Paper Towels, Sponges
-Priority 2: Coffee, Cooking Oil, Trash Bags
-Prices: $3-20
+Common printer room items to check:
+- Printer Paper (Ream): $15-25
+- Ink Cartridges: $25-40
+- Toner Cartridges: $30-60
+- Pens/Markers: $5-15
+- Sticky Notes: $4-8
+- Staples/Paper Clips: $3-8
+- Coffee/K-Cups: $10-18
+- Snacks: $4-12
 
-BEDROOM/LAUNDRY:
-Priority 1: Laundry Detergent, Fabric Softener
-Priority 2: Dryer Sheets, Air Freshener
-Prices: $5-25
+IF YOU SEE A KITCHEN/BREAK ROOM:
+- Check: Is dish soap bottle at sink visible and low/empty?
+- Check: Are paper towels visibly running out or holder empty?
+- Check: Are sponges visible and worn out/missing?
+- Check: Is coffee/coffee pods area visible with empty containers?
+- Check: Are trash bags visible and depleted?
+- Check: Is hand soap dispenser visible and empty?
+- Check: Are cleaning supplies (spray bottles) visible and empty?
+- Check: Are snacks/food items visibly missing from designated areas?
+- If everything looks adequate and stocked, return []
 
-OFFICE/DESK:
-Priority 1: Coffee, Snacks, Pens
-Priority 2: Sticky Notes, Water, Organizers
-Prices: $3-15
+Common kitchen items to check:
+- Dish Soap: $4-8
+- Paper Towels: $6-12
+- Sponges: $4-8
+- Coffee/K-Cups: $10-18
+- Trash Bags: $8-15
+- Hand Soap: $3-6
+- All-Purpose Cleaner: $4-8
+- Snacks (chips, granola bars): $4-10
 
-PANTRY/FRIDGE:
-Priority 1: Milk, Eggs, Bread, Pasta
-Priority 2: Snacks, Canned Goods, Rice
-Prices: $2-20
+PRICING GUIDELINES (realistic retail prices):
+Office/Printer Supplies: $3-60
+Kitchen/Break Room: $3-18
 
-STRATEGY:
-- Pick the 1-2 MOST important items for the visible scene
-- If multiple options, choose the most commonly needed
-- Estimate realistic retail prices
-- Use popular brands (Dawn, Bounty, Tide, Charmin, etc.)
+BRAND GUIDELINES:
+Office: HP, Canon, Epson, Bic, Post-it, Swingline, Keurig
+Kitchen: Dawn, Bounty, Scotch-Brite, Softsoap, Clorox, Folgers
 
-REQUIRED FORMAT (1-2 items only):
-[
-  {"name":"Item Name","brand":"Brand Name","price":9.99,"status":"Missing"},
-  {"name":"Another Item","brand":"Brand","price":12.49,"status":"Low"}
-]
+VALID RESPONSE FORMATS:
 
-EXAMPLES:
+Empty array if nothing needed:
+[]
 
-Bathroom scene:
-[{"name":"Toilet Paper","brand":"Charmin Ultra","price":8.99,"status":"Missing"},{"name":"Hand Soap","brand":"Softsoap","price":3.49,"status":"Recommended"}]
+Printer room example (paper low):
+[{"name":"Printer Paper","brand":"HP Office","price":18.99,"status":"Low"}]
 
-Kitchen sink:
-[{"name":"Dish Soap","brand":"Dawn Ultra","price":4.99,"status":"Low"},{"name":"Sponges","brand":"Scotch-Brite","price":5.99,"status":"Missing"}]
+Kitchen example (soap empty):
+[{"name":"Dish Soap","brand":"Dawn Ultra","price":4.99,"status":"Empty"}]
 
-Office desk:
-[{"name":"Coffee","brand":"Folgers","price":12.99,"status":"Missing"},{"name":"Pens","brand":"Bic","price":4.49,"status":"Low"}]
+Two items clearly needed:
+[{"name":"Paper Towels","brand":"Bounty","price":6.99,"status":"Low"},{"name":"Coffee Pods","brand":"Keurig K-Cup","price":15.99,"status":"Missing"}]
 
-Remember: EXACTLY 1-2 items, always include brand and price, focus on highest priority items!`,
+REMEMBER: BE STRICT. Only recommend what you can ACTUALLY SEE is needed in the printer room or kitchen. Return [] if everything looks fine!`
                   },
                   {
-                    inline_data: {
-                      mime_type: "image/jpeg",
-                      data: base64Image,
-                    },
-                  },
-                ],
-              },
+                    type: "image_url",
+                    image_url: {
+                      url: `data:image/jpeg;base64,${base64Image}`
+                    }
+                  }
+                ]
+              }
             ],
+            max_tokens: 500
           }),
         }
       );
 
       const data = await response.json();
-      console.log("Gemini API response:", JSON.stringify(data, null, 2));
+      console.log("OpenAI API response:", JSON.stringify(data, null, 2));
       
       // Handle rate limit errors
       if (data.error) {
-        if (data.error.code === 429) {
+        if (data.error.code === 'rate_limit_exceeded') {
           console.warn("Rate limit exceeded, skipping this analysis cycle");
           return; // Skip this cycle silently
         }
         throw new Error(data.error.message || "API error");
       }
       
-      if (data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
-        const text = data.candidates[0].content.parts[0].text;
-        console.log("Gemini response text:", text);
+      if (data.choices && data.choices[0]?.message?.content) {
+        const text = data.choices[0].message.content;
+        console.log("OpenAI response text:", text);
         
         // Extract JSON from the response
         const jsonMatch = text.match(/\[[\s\S]*\]/);
@@ -333,9 +355,9 @@ Remember: EXACTLY 1-2 items, always include brand and price, focus on highest pr
                 setRecentActivities(prev => [...newActivities, ...prev].slice(0, 15));
               }
             } else if (detectedItems.length > 0) {
-              // All items cleared
+              // All items cleared - AI found nothing that needs restocking
               const noItemsActivity = {
-                message: "All household items adequately stocked",
+                message: "No items need restocking - everything looks good",
                 time: "Just now",
               };
               setRecentActivities(prev => [noItemsActivity, ...prev].slice(0, 15));
@@ -357,7 +379,7 @@ Remember: EXACTLY 1-2 items, always include brand and price, focus on highest pr
       try {
         const base64Image = uploadedImage.split(",")[1];
         console.log("Base64 length:", base64Image.length);
-        await analyzeImageWithGemini(base64Image);
+        await analyzeImageWithOpenAI(base64Image);
       } catch (error) {
         console.error("Error analyzing uploaded image:", error);
         if (!silent) {
@@ -400,7 +422,7 @@ Remember: EXACTLY 1-2 items, always include brand and price, focus on highest pr
     const base64Image = imageData.split(",")[1];
 
     try {
-      await analyzeImageWithGemini(base64Image);
+      await analyzeImageWithOpenAI(base64Image);
     } catch (error) {
       console.error("Error analyzing image:", error);
       if (!silent) {
