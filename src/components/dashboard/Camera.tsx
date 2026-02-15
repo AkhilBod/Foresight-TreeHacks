@@ -142,90 +142,25 @@ const Camera = () => {
                 content: [
                   {
                     type: "text",
-                    text: `You are an AI shopping assistant for Visa Smart Home Commerce. Your job is to analyze spaces and ALWAYS recommend 1-2 items that should be restocked.
+                    text: `You are an AI shopping assistant analyzing images to detect household items that need restocking.
 
-MANDATORY: You MUST return at least 1 item, preferably 2 items. NEVER return an empty array.
+Analyze this image and identify items that appear to be missing, low in stock, or could be recommended for purchase.
 
-YOUR TASK: Look at this image and recommend 1-2 products that are commonly needed in this type of space.
+For each item you identify, provide:
+- name: The item name
+- brand: A suggested brand (e.g., "Bounty", "Tide", "Charmin")  
+- price: Estimated price in dollars
+- status: One of "Missing", "Low", or "Needed"
 
-DETECTION STRATEGY FOR EACH SPACE:
+Only recommend items if you have reasonable confidence they would be useful for the area / space based on its sorrounding but make sure ur atleast returning ATLEAST one thing AT ALL TIMES.
 
-1. SNACK TABLE / REFRESHMENT AREA:
-If you see tables with snacks, drinks, food items, or refreshment setup:
-- Snacks - Variety Pack (chips, crackers), $7.99, status: "Low"
-- Beverages - Water Bottles Pack, $6.99, status: "Recommended"
-- Coffee - Keurig K-Cup Variety, $15.99, status: "Low"
-- Candy/Treats - Mixed Candy Bowl, $8.99, status: "Recommended"
-- Napkins - Paper Napkins Pack, $4.99, status: "Low"
-- Plates/Cups - Disposable Party Pack, $9.99, status: "Recommended"
-
-2. KITCHEN / BREAK ROOM:
-If you see ANY sink, counter, fridge, microwave, or kitchen area:
-- Dish Soap - Dawn Ultra, $4.99, status: "Low"
-- Paper Towels - Bounty Select-A-Size, $8.99, status: "Low"
-- Sponges - Scotch-Brite Pack, $5.99, status: "Recommended"
-- Coffee - Folgers/Keurig K-Cups, $14.99, status: "Low"
-- Hand Soap - Softsoap Pump, $3.99, status: "Recommended"
-- Trash Bags - Glad Kitchen Bags, $9.99, status: "Low"
-- All-Purpose Cleaner - Clorox Spray, $5.99, status: "Recommended"
-- Snacks - Variety Snack Pack, $7.99, status: "Low"
-
-3. PUBLIC BATHROOM:
-If you see toilets, sinks, stalls, or bathroom fixtures:
-- Toilet Paper - Charmin Ultra, $18.99, status: "Low"
-- Hand Soap - Softsoap Refill, $8.99, status: "Low"
-- Paper Towels - Bounty Commercial, $12.99, status: "Recommended"
-- Hand Sanitizer - Purell Pump, $7.99, status: "Low"
-- Bathroom Cleaner - Lysol Spray, $6.99, status: "Recommended"
-- Air Freshener - Febreze Spray, $5.99, status: "Low"
-- Trash Bags - Small Bathroom Bags, $6.99, status: "Recommended"
-
-4. CLASSROOM:
-If you see desks, chairs, whiteboard, projector, or classroom setup:
-- Whiteboard Markers - Expo Pack, $12.99, status: "Low"
-- Printer Paper - HP Copy Paper, $18.99, status: "Recommended"
-- Pens/Pencils - Bic Assorted Pack, $8.99, status: "Low"
-- Sticky Notes - Post-it Pack, $6.99, status: "Recommended"
-- Tissues - Kleenex Box, $4.99, status: "Low"
-- Hand Sanitizer - Purell Pump, $7.99, status: "Recommended"
-- Cleaning Wipes - Clorox Disinfecting, $5.99, status: "Low"
-- Snacks - Granola Bars, $6.99, status: "Recommended"
-
-RULES FOR ALWAYS RESPONDING:
-1. Snack table → MUST recommend Snacks + Water/Beverages
-2. Kitchen/break room → MUST recommend Dish Soap + Paper Towels
-3. Public bathroom → MUST recommend Toilet Paper + Hand Soap
-4. Classroom → MUST recommend Whiteboard Markers + Printer Paper
-5. If space unclear → Default to Paper Towels + Snacks
-6. ALWAYS pick the 2 most likely items based on space type
-7. NEVER return empty array [] - always return 1-2 items
-
-STATUS OPTIONS (use liberally):
-- "Low" = Item should be restocked soon (use this most)
-- "Recommended" = Good to have on hand (use for 2nd item)
-- "Empty" = Urgently needs restocking (use if space looks messy)
-
-RESPONSE FORMAT (JSON array with 1-2 items):
+Return your response as a JSON array of objects. Example:
 [
-  {"name":"Item Name","brand":"Brand Name","price":9.99,"status":"Low"},
-  {"name":"Another Item","brand":"Brand","price":12.49,"status":"Recommended"}
+  {"name": "Paper Towels", "brand": "Bounty Select-A-Size", "price": 8.99, "status": "Low"},
+  {"name": "Dish Soap", "brand": "Dawn Ultra", "price": 4.99, "status": "Missing"}
 ]
 
-EXAMPLES (ALWAYS use these patterns):
-
-Snack table detected:
-[{"name":"Snacks","brand":"Variety Pack","price":7.99,"status":"Low"},{"name":"Water Bottles","brand":"Aquafina Pack","price":6.99,"status":"Recommended"}]
-
-Kitchen/break room detected:
-[{"name":"Dish Soap","brand":"Dawn Ultra","price":4.99,"status":"Low"},{"name":"Paper Towels","brand":"Bounty Select","price":8.99,"status":"Low"}]
-
-Public bathroom detected:
-[{"name":"Toilet Paper","brand":"Charmin Ultra","price":18.99,"status":"Low"},{"name":"Hand Soap","brand":"Softsoap Refill","price":8.99,"status":"Low"}]
-
-Classroom detected:
-[{"name":"Whiteboard Markers","brand":"Expo Assorted","price":12.99,"status":"Low"},{"name":"Printer Paper","brand":"HP Copy Paper","price":18.99,"status":"Recommended"}]
-
-CRITICAL: You MUST return 1-2 items EVERY TIME. Identify the space type (snack table, kitchen, bathroom, or classroom) and pick the most appropriate 1-2 items. DO NOT return empty array!`
+If no items are detected, return an empty array: []`
                   },
                   {
                     type: "image_url",
@@ -312,16 +247,16 @@ CRITICAL: You MUST return 1-2 items EVERY TIME. Identify the space type (snack t
           
           console.log("Detected items:", confirmedItems);
           
-          // Only update if there's a meaningful change
-          const hasChanged = 
-            confirmedItems.length !== detectedItems.length ||
-            confirmedItems.some(item => {
-              const existing = detectedItems.find(d => d.name === item.name);
-              return !existing || existing.status !== item.status;
+          // Stack new items with existing ones (no duplicates based on name)
+          if (confirmedItems.length > 0) {
+            setDetectedItems(prev => {
+              // Filter out duplicates - keep existing items that aren't in new detections
+              const existingUnique = prev.filter(existing => 
+                !confirmedItems.some(newItem => newItem.name === existing.name)
+              );
+              // Add new items to the top of the stack
+              return [...confirmedItems, ...existingUnique];
             });
-          
-          if (hasChanged) {
-            setDetectedItems(confirmedItems);
             
             // Save to localStorage for Dashboard access
             const existingPurchases = JSON.parse(localStorage.getItem('pendingPurchases') || '[]');
@@ -334,31 +269,15 @@ CRITICAL: You MUST return 1-2 items EVERY TIME. Identify the space type (snack t
             
             if (newPurchases.length > 0) {
               localStorage.setItem('pendingPurchases', JSON.stringify([...newPurchases, ...existingPurchases]));
-            }
-            
-            // Add to recent activities only for newly confirmed items
-            if (confirmedItems.length > 0) {
-              const newlyConfirmed = confirmedItems.filter(item => {
-                const wasConfirmed = detectedItems.find(d => d.name === item.name && d.status === item.status);
-                return !wasConfirmed;
-              });
               
-              if (newlyConfirmed.length > 0) {
-                console.log("Adding to activities:", newlyConfirmed.length, "newly confirmed items");
-                const newActivities = newlyConfirmed.map((item: DetectedItem) => ({
-                  message: `${item.name} detected - ${item.status}`,
-                  time: "Just now",
-                }));
-                
-                setRecentActivities(prev => [...newActivities, ...prev].slice(0, 15));
-              }
-            } else if (detectedItems.length > 0) {
-              // All items cleared - AI found nothing that needs restocking
-              const noItemsActivity = {
-                message: "No items need restocking - everything looks good",
+              // Add to recent activities only for brand new items (not duplicates)
+              console.log("Adding to activities:", newPurchases.length, "new items");
+              const newActivities = newPurchases.map((item: DetectedItem) => ({
+                message: `${item.name} detected - ${item.status}`,
                 time: "Just now",
-              };
-              setRecentActivities(prev => [noItemsActivity, ...prev].slice(0, 15));
+              }));
+              
+              setRecentActivities(prev => [...newActivities, ...prev].slice(0, 15));
             }
           }
         }
