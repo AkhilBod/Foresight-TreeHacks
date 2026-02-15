@@ -11,6 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
 } from "recharts";
+import { addToAmazonCart } from "@/lib/browserbase";
 
 // --- Sidebar ---
 const sidebarItems = [
@@ -106,6 +107,7 @@ const Dashboard = () => {
   const [activityItems, setActivityItems] = useState<ActivityItem[]>([]);
   const [buyingItem, setBuyingItem] = useState<string | null>(null);
   const [buyingStage, setBuyingStage] = useState<'amazon' | 'visa' | null>(null);
+  const [liveViewUrl, setLiveViewUrl] = useState<string | null>(null);
   const [monthlySpend, setMonthlySpend] = useState(142.30);
   const [itemsOrdered, setItemsOrdered] = useState(23);
   const [chartData, setChartData] = useState([
@@ -192,50 +194,62 @@ const Dashboard = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const handleApprove = (name: string) => {
-    // Get the item price before removing it
+  const handleApprove = async (name: string) => {
+    // Get the item details before removing it
     const item = purchases.find(p => p.name === name);
-    const itemPrice = item?.price || 0;
+    if (!item) return;
     
-    // Start buying process
+    const itemPrice = item.price || 0;
+    const itemBrand = item.brand || '';
+    
+    // Start buying process - show live view
     setBuyingItem(name);
     setBuyingStage('amazon');
+    setLiveViewUrl(null);
     
-    // After 4 seconds, switch to Visa
+    try {
+      // Trigger Browserbase automation and get live view URL
+      console.log(`Initiating Browserbase automation for ${name}...`);
+      const result = await addToAmazonCart(name, itemBrand);
+      if (result.liveViewUrl) {
+        setLiveViewUrl(result.liveViewUrl);
+        console.log('Live view URL received:', result.liveViewUrl);
+      }
+    } catch (error) {
+      console.error('Browserbase automation failed:', error);
+    }
+    
+    // After 15 seconds (enough time for automation), complete the purchase
     setTimeout(() => {
-      setBuyingStage('visa');
+      setBuyingItem(null);
+      setBuyingStage(null);
+      setLiveViewUrl(null);
       
-      // After 3 more seconds, complete the purchase
-      setTimeout(() => {
-        setBuyingItem(null);
-        setBuyingStage(null);
-        
-        // Update stats
-        setMonthlySpend(prev => Math.round((prev + itemPrice) * 100) / 100);
-        setItemsOrdered(prev => prev + 1);
-        
-        // Update today's spending in chart (Sunday)
-        setChartData(prev => {
-          const updated = [...prev];
-          updated[6] = { ...updated[6], amount: updated[6].amount + itemPrice };
-          return updated;
-        });
-        
-        // Add to activity
-        setActivityItems(prev => [{
-          time: "Just now",
-          text: `${name} approved`,
-          status: "approved" as const,
-          timestamp: Date.now()
-        }, ...prev].slice(0, 10));
-        
-        setPurchases((prev) => {
-          const updated = prev.filter((p) => p.name !== name);
-          localStorage.setItem('pendingPurchases', JSON.stringify(updated));
-          return updated;
-        });
-      }, 3000);
-    }, 4000);
+      // Update stats
+      setMonthlySpend(prev => Math.round((prev + itemPrice) * 100) / 100);
+      setItemsOrdered(prev => prev + 1);
+      
+      // Update today's spending in chart (Sunday)
+      setChartData(prev => {
+        const updated = [...prev];
+        updated[6] = { ...updated[6], amount: updated[6].amount + itemPrice };
+        return updated;
+      });
+      
+      // Add to activity
+      setActivityItems(prev => [{
+        time: "Just now",
+        text: `${name} approved & added to Amazon cart`,
+        status: "approved" as const,
+        timestamp: Date.now()
+      }, ...prev].slice(0, 10));
+      
+      setPurchases((prev) => {
+        const updated = prev.filter((p) => p.name !== name);
+        localStorage.setItem('pendingPurchases', JSON.stringify(updated));
+        return updated;
+      });
+    }, 20000);
   };
 
   const handleDecline = (name: string) => {
@@ -519,97 +533,89 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Buying Modal */}
+      {/* Buying Modal - Live Browser View */}
       {buyingItem && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="relative w-full max-w-md rounded-2xl border border-border bg-card p-8 shadow-2xl"
+            className="relative w-full max-w-4xl h-[80vh] rounded-2xl border border-border bg-card shadow-2xl overflow-hidden flex flex-col"
           >
-            {buyingStage === 'amazon' && (
-              <div className="text-center space-y-6">
-                <div className="flex justify-center">
-                  <svg className="w-24 h-24" viewBox="0 0 200 200" fill="none">
-                    {/* Amazon smile logo */}
-                    <path
-                      d="M120 120C120 120 140 130 160 120C180 110 180 80 160 70C140 60 120 70 120 90V120Z"
-                      fill="#FF9900"
-                    />
-                    <path
-                      d="M80 120C80 120 60 130 40 120C20 110 20 80 40 70C60 60 80 70 80 90V120Z"
-                      fill="#FF9900"
-                    />
-                    <path
-                      d="M40 140C40 140 80 155 100 155C120 155 160 140 160 140"
-                      stroke="#FF9900"
-                      strokeWidth="8"
-                      strokeLinecap="round"
-                    />
-                    <path
-                      d="M30 150L170 150"
-                      stroke="#232F3E"
-                      strokeWidth="6"
-                      strokeLinecap="round"
-                    />
-                    <path
-                      d="M160 145L175 155L160 165"
-                      stroke="#232F3E"
-                      strokeWidth="6"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      fill="none"
-                    />
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-card">
+              <div className="flex items-center gap-3">
+                <div className="flex gap-1.5">
+                  <div className="w-3 h-3 rounded-full bg-red-500" />
+                  <div className="w-3 h-3 rounded-full bg-yellow-500" />
+                  <div className="w-3 h-3 rounded-full bg-green-500" />
+                </div>
+                <div className="flex items-center gap-2">
+                  <svg className="w-5 h-5 text-[#FF9900]" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M.045 18.02c.072-.116.187-.124.348-.022 2.344 1.47 4.882 2.208 7.6 2.208 2.636 0 5.175-.688 7.607-2.064.256-.144.468-.168.634-.072.168.096.168.264-.008.504-.96 1.32-2.82 2.4-5.58 3.24-2.76.84-5.16.84-7.2 0-2.04-.84-3.528-2.076-3.456-3.672l.055-.122zM12 5.88c-3.18 0-5.76 2.58-5.76 5.76s2.58 5.76 5.76 5.76 5.76-2.58 5.76-5.76S15.18 5.88 12 5.88z"/>
                   </svg>
-                </div>
-                <div>
-                  <h3 className="text-xl font-display font-bold text-foreground mb-2">
-                    Purchasing via Amazon
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    Our AI agent is placing your order for {buyingItem}
-                  </p>
-                </div>
-                <div className="flex justify-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '0ms' }} />
-                  <div className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '150ms' }} />
-                  <div className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '300ms' }} />
+                  <span className="text-sm font-semibold text-foreground">
+                    AI Agent Shopping: {buyingItem}
+                  </span>
                 </div>
               </div>
-            )}
-            
-            {buyingStage === 'visa' && (
-              <div className="text-center space-y-6">
-                <div className="flex justify-center">
-                  <svg className="w-24 h-16" viewBox="0 0 200 130" fill="none">
-                    {/* Visa logo */}
-                    <rect width="200" height="130" rx="12" fill="#1A1F71"/>
-                    <text x="100" y="80" fontSize="48" fontWeight="bold" fill="white" textAnchor="middle" fontFamily="Arial, sans-serif">
-                      VISA
-                    </text>
-                  </svg>
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-500/20 border border-green-500/30">
+                  <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                  <span className="text-xs font-semibold text-green-500">Live</span>
                 </div>
-                <div>
-                  <h3 className="text-xl font-display font-bold text-foreground mb-2">
-                    Securing Transaction
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    Verifying payment with Visa Secure
-                  </p>
-                </div>
-                <div className="flex justify-center">
-                  <div className="relative w-12 h-12">
-                    <div className="absolute inset-0 border-4 border-success/30 rounded-full" />
-                    <div className="absolute inset-0 border-4 border-success border-t-transparent rounded-full animate-spin" />
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <svg className="w-6 h-6 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                      </svg>
-                    </div>
+                <button
+                  onClick={() => {
+                    setBuyingItem(null);
+                    setBuyingStage(null);
+                    setLiveViewUrl(null);
+                  }}
+                  className="p-1.5 rounded-lg hover:bg-surface-elevated transition-colors text-muted-foreground hover:text-foreground"
+                >
+                  <XIcon size={16} />
+                </button>
+              </div>
+            </div>
+
+            {/* Live Browser View */}
+            <div className="flex-1 bg-black relative">
+              {liveViewUrl ? (
+                <iframe
+                  src={liveViewUrl}
+                  className="w-full h-full border-0"
+                  sandbox="allow-same-origin allow-scripts"
+                  allow="clipboard-read; clipboard-write"
+                />
+              ) : (
+                <div className="flex flex-col items-center justify-center h-full gap-4">
+                  <div className="relative w-16 h-16">
+                    <div className="absolute inset-0 border-4 border-primary/30 rounded-full" />
+                    <div className="absolute inset-0 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+                  </div>
+                  <div className="text-center">
+                    <p className="text-foreground font-semibold text-lg mb-1">
+                      Connecting to AI Shopping Agent...
+                    </p>
+                    <p className="text-muted-foreground text-sm">
+                      Opening browser to purchase {buyingItem}
+                    </p>
                   </div>
                 </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="px-6 py-3 border-t border-border bg-card flex items-center justify-between">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                  <path d="m7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+                <span>Secured by Visa</span>
               </div>
-            )}
+              <div className="text-xs text-muted-foreground">
+                Powered by Browserbase
+              </div>
+            </div>
           </motion.div>
         </div>
       )}

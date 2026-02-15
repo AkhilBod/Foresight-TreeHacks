@@ -135,32 +135,53 @@ const Camera = () => {
             "Authorization": `Bearer ${OPENAI_API_KEY}`,
           },
           body: JSON.stringify({
-            model: "gpt-4o-mini",
+            model: "gpt-5-nano",
             messages: [
               {
                 role: "user",
                 content: [
                   {
                     type: "text",
-                    text: `You are an AI shopping assistant analyzing images to detect household items that need restocking.
+                    text: `You are an AI shopping assistant. Your job is to analyze ANY image and ALWAYS recommend 1-2 complementary products that would be useful in that space.
 
-Analyze this image and identify items that appear to be missing, low in stock, or could be recommended for purchase.
+CRITICAL RULE: You MUST return at least 1 item, preferably 2 items. NEVER return empty array.
 
-For each item you identify, provide:
-- name: The item name
-- brand: A suggested brand (e.g., "Bounty", "Tide", "Charmin")  
-- price: Estimated price in dollars
-- status: One of "Missing", "Low", or "Needed"
+DETECTION STRATEGY:
+1. Look at what's visible in the image
+2. Identify the type of space (office, home, kitchen, classroom, bathroom, etc.)
+3. Think about what complementary items would be useful there
+4. ALWAYS recommend something relevant
 
-Only recommend items if you have reasonable confidence they would be useful for the area / space based on its sorrounding but make sure ur atleast returning ATLEAST one thing AT ALL TIMES.
+EXAMPLES OF COMPLEMENTARY RECOMMENDATIONS:
+- See a TV/monitor/remote → Recommend: "Streaming Device" (Roku/Fire Stick), "HDMI Cable", "Universal Remote"
+- See a mouse → Recommend: "Keyboard" (Logitech Wireless), "Mouse Pad", "USB Hub"
+- See a keyboard → Recommend: "Mouse" (Wireless Mouse), "Wrist Rest", "Laptop Stand"
+- See a desk → Recommend: "Desk Lamp", "Cable Organizer", "Monitor Stand"
+- See a laptop → Recommend: "Laptop Stand", "Wireless Mouse", "USB-C Hub"
+- See a phone → Recommend: "Phone Charger", "Screen Protector", "Phone Case"
+- See papers/documents → Recommend: "Paper Clips", "Stapler", "File Folders"
+- See a printer → Recommend: "Printer Paper", "Ink Cartridges", "Cable"
+- See a kitchen sink → Recommend: "Dish Soap", "Sponges", "Paper Towels"
+- See a bathroom → Recommend: "Toilet Paper", "Hand Soap", "Paper Towels"
+- See a classroom → Recommend: "Whiteboard Markers", "Erasers", "Notebooks"
+- See food/drinks → Recommend: "Paper Towels", "Napkins", "Trash Bags"
+- See electronics → Recommend: "Batteries", "Charging Cable", "Power Strip"
+- See cleaning area → Recommend: "Cleaning Supplies", "Trash Bags", "Gloves"
 
-Return your response as a JSON array of objects. Example:
+IMPORTANT: Think about what items are COMMONLY USED TOGETHER or NEEDED IN THAT SPACE. Be creative and helpful!
+
+For each item, provide:
+- name: The item name (be specific)
+- brand: A real brand name (e.g., "Logitech", "Samsung", "Bounty", "HP")
+- price: Realistic price in dollars
+- status: "Recommended" or "Low" or "Needed"
+
+MANDATORY: Return a JSON array with 1 item. Example:
 [
-  {"name": "Paper Towels", "brand": "Bounty Select-A-Size", "price": 8.99, "status": "Low"},
-  {"name": "Dish Soap", "brand": "Dawn Ultra", "price": 4.99, "status": "Missing"}
+  {"name": "Wireless Keyboard", "brand": "Logitech K380", "price": 39.99, "status": "Recommended"},
 ]
 
-If no items are detected, return an empty array: []`
+DO NOT return empty array. ALWAYS suggest complementary items for whatever you see!`
                   },
                   {
                     type: "image_url",
@@ -171,7 +192,7 @@ If no items are detected, return an empty array: []`
                 ]
               }
             ],
-            max_tokens: 500
+            max_completion_tokens: 2000
           }),
         }
       );
@@ -247,20 +268,23 @@ If no items are detected, return an empty array: []`
           
           console.log("Detected items:", confirmedItems);
           
+          // Limit to max 2 items per detection
+          const limitedItems = confirmedItems.slice(0, 2);
+          
           // Stack new items with existing ones (no duplicates based on name)
-          if (confirmedItems.length > 0) {
+          if (limitedItems.length > 0) {
             setDetectedItems(prev => {
               // Filter out duplicates - keep existing items that aren't in new detections
               const existingUnique = prev.filter(existing => 
-                !confirmedItems.some(newItem => newItem.name === existing.name)
+                !limitedItems.some(newItem => newItem.name === existing.name)
               );
-              // Add new items to the top of the stack
-              return [...confirmedItems, ...existingUnique];
+              // Add new items to the top of the stack, limit total to 2 items displayed
+              return [...limitedItems, ...existingUnique].slice(0, 2);
             });
             
-            // Save to localStorage for Dashboard access
+            // Save to localStorage for Dashboard access (limit to 2 items)
             const existingPurchases = JSON.parse(localStorage.getItem('pendingPurchases') || '[]');
-            const newPurchases = confirmedItems.filter(item => {
+            const newPurchases = limitedItems.filter(item => {
               return !existingPurchases.some((p: any) => p.name === item.name);
             }).map(item => ({
               ...item,
