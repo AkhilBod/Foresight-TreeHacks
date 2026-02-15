@@ -2,13 +2,21 @@ import express from 'express';
 import cors from 'cors';
 import { chromium } from 'playwright-core';
 import Browserbase from '@browserbasehq/sdk';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-const BROWSERBASE_API_KEY = 'bb_live_s9hWIOg3unpQPZ4BXOLF-a0lY2E';
-const BROWSERBASE_PROJECT_ID = 'c3948bfc-711f-424d-9685-13fc8db362d7';
+const BROWSERBASE_API_KEY = process.env.BROWSERBASE_API_KEY;
+const BROWSERBASE_PROJECT_ID = process.env.BROWSERBASE_PROJECT_ID;
+
+if (!BROWSERBASE_API_KEY || !BROWSERBASE_PROJECT_ID) {
+  console.error('Missing BROWSERBASE_API_KEY or BROWSERBASE_PROJECT_ID in .env');
+  process.exit(1);
+}
 
 const bb = new Browserbase({
   apiKey: BROWSERBASE_API_KEY,
