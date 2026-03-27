@@ -1,73 +1,31 @@
-# Welcome to your Lovable project
+Foresight — AI-Powered Smart Home Commerce
+Inspiration
+We've all had that moment — you reach for the dish soap mid-wash, and it's empty. You're out of coffee filters on a Monday morning. The essentials we depend on daily always seem to run out at the worst possible time. We realized that the cameras and smart devices already in our homes could do more than just sit there. What if they could see what you're running low on and handle it before you even notice? That's the idea behind Foresight — turning passive home cameras into an intelligent, proactive shopping assistant that never lets you run out of the things that matter.
 
-## Project info
+What It Does
+Foresight is an AI-powered smart home commerce platform that uses your existing cameras to detect household items in use, predict when they're running low, and automatically purchase replacements through Amazon — all with a single tap of approval.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+Core Features
+Real-Time AI Vision Detection — A live camera feed powered by OpenAI's GPT-5 nano analyzes your environment in real time, identifying household products and their usage context (e.g., washing dishes → dish soap, cooking → olive oil).
+Complementary Item Recommendations — The AI doesn't just detect what's visible — it recommends complementary items you might need based on what it sees (see a mouse → recommend a keyboard, see a TV → recommend a streaming device).
+One-Tap Purchase Approval — Detected items appear as cards on your dashboard. Approve with a single tap, and Foresight's AI agent handles the rest.
+Autonomous Browser Shopping Agent — Powered by Browserbase and Playwright, an AI agent opens a real browser session, searches Amazon, selects the best product, and adds it to your cart — all autonomously.
+Live Shopping View — Watch the AI agent shop in real time through an embedded live browser view directly in the dashboard. A browser-style modal shows the agent navigating Amazon, searching, and adding items to cart.
+Smart Dashboard — An analytics dashboard with weekly spending charts, total savings, items tracked, and a live activity feed of all purchases and detections.
+Additional Features
+Items stack without duplicates, limited to 2 items per detection for quality recommendations
+Confidence scores randomized between 70-100% for realistic detection display
+Activity feed with timestamped entries for approvals, declines, and purchases
+Dynamic stats (total saved, items tracked, automation rate) update in real time
+Responsive design with dark theme optimized for home dashboard displays
+How We Built It
+Our tech stack combines cutting-edge AI with modern web technologies:
 
-## How can I edit this code?
-
-There are several ways of editing your application.
-
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+Frontend: React 18 + TypeScript, built with Vite for instant hot module reloading. Tailwind CSS and shadcn/ui provide a sleek, dark-themed dashboard UI. Framer Motion powers smooth animations throughout.
+AI Vision: OpenAI's GPT-5 nano model processes camera frames via the Chat Completions API with vision capabilities. We chose GPT-5 nano for its speed — real-time detection needs sub-second responses. The model receives base64-encoded frames and returns structured JSON with item names, brands, confidence scores, and reasoning.
+Prompt Engineering: Carefully crafted prompts instruct the model to recommend complementary items rather than just identifying what's on screen. The AI thinks about what activities are happening and what related products would be useful.
+Browser Automation: Browserbase SDK creates cloud browser sessions, and Playwright-core connects via Chrome DevTools Protocol (CDP) to automate the full Amazon shopping flow — search, product selection, and add-to-cart.
+Live View: Browserbase's debug API provides a real-time fullscreen view URL that we embed as an iframe, letting users watch the AI agent shop in real time.
+Backend: A lightweight Express.js server handles Browserbase session management and Playwright automation. Runs on Node.js (required by Playwright — Bun is not supported).
+State Management: localStorage bridges the Camera component and Dashboard, with polling for real-time sync of pending purchases.
+Security: All API keys (OpenAI, Browserbase) stored in .env and loaded via dotenv — never exposed in client-side code or git history.
